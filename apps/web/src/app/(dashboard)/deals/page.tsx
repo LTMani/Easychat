@@ -63,7 +63,7 @@ export default function DealsPage() {
         },
         body: JSON.stringify({
           pipelineId: pipeline.id,
-          stageId: formData.stageId || pipeline.stages[0]?.id,
+          stageId: formData.stageId || pipeline.stages?.[0]?.id,
           title: formData.title,
           amount: parseFloat(formData.amount || '0'),
         }),
@@ -78,7 +78,7 @@ export default function DealsPage() {
   };
 
   const handleMoveStage = async (dealId: string, currentStageId: string) => {
-    if (!pipeline) return;
+    if (!pipeline || !pipeline.stages) return;
     const stages = pipeline.stages;
     const currentIndex = stages.findIndex((s: any) => s.id === currentStageId);
     if (currentIndex < 0 || currentIndex >= stages.length - 1) return;
@@ -104,7 +104,7 @@ export default function DealsPage() {
     } catch (err) {}
   };
 
-  const totalPipelineValue = deals.reduce((acc, d) => acc + (d.amount || 0), 0);
+  const totalPipelineValue = deals.reduce((acc, d) => acc + (Number(d.amount) || 0), 0);
 
   return (
     <div className="h-screen bg-slate-50 flex flex-col">
@@ -152,7 +152,7 @@ export default function DealsPage() {
           <div className="flex space-x-6 h-full min-w-max">
             {pipeline?.stages?.map((stage: any) => {
               const stageDeals = deals.filter((d) => d.stageId === stage.id);
-              const stageTotal = stageDeals.reduce((acc, d) => acc + (d.amount || 0), 0);
+              const stageTotal = stageDeals.reduce((acc, d) => acc + (Number(d.amount) || 0), 0);
 
               return (
                 <div key={stage.id} className="w-80 bg-slate-100/70 rounded-xl p-4 flex flex-col h-full border border-slate-200">
@@ -183,7 +183,7 @@ export default function DealsPage() {
                         >
                           <div className="font-bold text-slate-900 text-sm mb-1">{deal.title}</div>
                           <div className="text-lg font-extrabold text-green-600 mb-2">
-                            ${deal.amount?.toLocaleString()} <span className="text-xs font-normal text-slate-400">{deal.currency}</span>
+                            ${(Number(deal.amount) || 0).toLocaleString()} <span className="text-xs font-normal text-slate-400">{deal.currency || 'USD'}</span>
                           </div>
 
                           {deal.contact && (

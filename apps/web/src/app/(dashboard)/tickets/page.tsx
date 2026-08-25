@@ -28,6 +28,9 @@ export default function TicketsPage() {
       const data = await res.json();
       if (res.ok && data.data) {
         setTickets(data.data);
+        if (!activeTicket && data.data.length > 0) {
+          setActiveTicket(data.data[0]);
+        }
       }
     } catch (err) {
     } finally {
@@ -79,8 +82,13 @@ export default function TicketsPage() {
         }),
       });
 
-      if (res.ok) {
+      const resData = await res.json();
+      if (res.ok && resData.data) {
         setCommentText('');
+        setActiveTicket({
+          ...activeTicket,
+          comments: [...(activeTicket.comments || []), resData.data],
+        });
         fetchTickets();
       }
     } catch (err) {}
@@ -182,15 +190,15 @@ export default function TicketsPage() {
                   <div className="flex-1 overflow-y-auto space-y-3 mb-4 max-h-60">
                     {activeTicket.comments?.map((c: any) => (
                       <div
-                        key={c.id}
+                        key={c.id || Math.random()}
                         className={`p-3 rounded-lg text-xs border ${
                           c.isInternal ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-slate-50 border-slate-200 text-slate-800'
                         }`}
                       >
                         <div className="flex items-center justify-between font-bold mb-1">
-                          <span>{c.user?.firstName} {c.user?.lastName} {c.isInternal ? '(Internal Note)' : ''}</span>
+                          <span>{c.user?.firstName || 'Agent'} {c.user?.lastName || ''} {c.isInternal ? '(Internal Note)' : ''}</span>
                           <span className="text-[10px] font-normal text-slate-400">
-                            {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {new Date(c.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
                         <p>{c.content}</p>
