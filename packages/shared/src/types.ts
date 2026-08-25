@@ -13,6 +13,9 @@ import {
   TaskStatus,
   TicketPriority,
   TicketStatus,
+  WorkflowTriggerType,
+  WorkflowActionType,
+  CustomFieldDataType,
 } from './enums';
 
 export interface ApiResponse<T = any> {
@@ -319,4 +322,69 @@ export interface KnowledgeArticlePayload {
   viewCount: number;
   author: UserProfile;
   createdAt: string;
+}
+
+export interface WorkflowRulePayload {
+  id: string;
+  organizationId: string;
+  createdById: string;
+  name: string;
+  triggerType: WorkflowTriggerType;
+  actionType: WorkflowActionType;
+  isActive: boolean;
+  config: any;
+  createdBy: UserProfile;
+  createdAt: string;
+}
+
+export interface ApiKeyPayload {
+  id: string;
+  organizationId: string;
+  createdById: string;
+  name: string;
+  prefix: string;
+  key?: string; // Only returned on creation
+  createdAt: string;
+}
+
+export interface WebhookEndpointPayload {
+  id: string;
+  organizationId: string;
+  url: string;
+  events: string[];
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CustomFieldDefinitionPayload {
+  id: string;
+  organizationId: string;
+  entityType: string;
+  fieldKey: string;
+  label: string;
+  dataType: CustomFieldDataType;
+  isRequired: boolean;
+  options: string[];
+}
+
+export interface AiInsightPayload {
+  id: string;
+  conversationId: string;
+  sentiment: string;
+  summary: string;
+  nextBestAction?: string;
+  leadScore?: number;
+  createdAt: string;
+}
+
+export interface AnalyticsSummaryPayload {
+  totalLeads: number;
+  totalContacts: number;
+  totalPipelineRevenue: number;
+  openDealsCount: number;
+  wonDealsCount: number;
+  winRatePercentage: number;
+  openTicketsCount: number;
+  slaBreachedTicketsCount: number;
+  avgResponseTimeMinutes: number;
 }

@@ -11,6 +11,9 @@ import {
   TaskStatus,
   TicketPriority,
   TicketStatus,
+  WorkflowTriggerType,
+  WorkflowActionType,
+  CustomFieldDataType,
 } from './enums';
 
 export const RegisterSchema = z.object({
@@ -198,3 +201,38 @@ export const CreateKnowledgeArticleSchema = z.object({
   content: z.string().min(1, { message: 'Content is required' }),
 });
 export type CreateKnowledgeArticleDto = z.infer<typeof CreateKnowledgeArticleSchema>;
+
+export const CreateWorkflowRuleSchema = z.object({
+  name: z.string().min(1, { message: 'Workflow name is required' }),
+  triggerType: z.nativeEnum(WorkflowTriggerType),
+  actionType: z.nativeEnum(WorkflowActionType),
+  config: z.record(z.any()).optional().default({}),
+});
+export type CreateWorkflowRuleDto = z.infer<typeof CreateWorkflowRuleSchema>;
+
+export const CreateApiKeySchema = z.object({
+  name: z.string().min(1, { message: 'Key name is required' }),
+  expiresInDays: z.number().optional(),
+});
+export type CreateApiKeyDto = z.infer<typeof CreateApiKeySchema>;
+
+export const CreateWebhookEndpointSchema = z.object({
+  url: z.string().url({ message: 'Valid webhook URL is required' }),
+  events: z.array(z.string()).min(1, { message: 'At least one event is required' }),
+});
+export type CreateWebhookEndpointDto = z.infer<typeof CreateWebhookEndpointSchema>;
+
+export const CreateCustomFieldSchema = z.object({
+  entityType: z.string().min(1),
+  fieldKey: z.string().min(1),
+  label: z.string().min(1),
+  dataType: z.nativeEnum(CustomFieldDataType).optional().default(CustomFieldDataType.STRING),
+  isRequired: z.boolean().optional().default(false),
+  options: z.array(z.string()).optional(),
+});
+export type CreateCustomFieldDto = z.infer<typeof CreateCustomFieldSchema>;
+
+export const GenerateAiSummarySchema = z.object({
+  conversationId: z.string().uuid(),
+});
+export type GenerateAiSummaryDto = z.infer<typeof GenerateAiSummarySchema>;

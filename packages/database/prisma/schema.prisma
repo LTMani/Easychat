@@ -105,6 +105,28 @@ enum TicketStatus {
   CLOSED
 }
 
+enum WorkflowTriggerType {
+  LEAD_CREATED
+  DEAL_STAGE_CHANGED
+  TICKET_CREATED
+  MESSAGE_RECEIVED
+}
+
+enum WorkflowActionType {
+  SEND_NOTIFICATION
+  ASSIGN_USER
+  CREATE_TASK
+  UPDATE_STATUS
+}
+
+enum CustomFieldDataType {
+  STRING
+  NUMBER
+  BOOLEAN
+  DATE
+  SELECT
+}
+
 model User {
   id               String               @id @default(uuid())
   email            String               @unique
@@ -138,6 +160,8 @@ model User {
   ticketComments        TicketComment[]          @relation("UserTicketComments")
   authoredArticles      KnowledgeArticle[]       @relation("AuthoredArticles")
   activities            Activity[]               @relation("UserActivities")
+  createdWorkflows      WorkflowRule[]           @relation("CreatedWorkflows")
+  apiKeys               ApiKey[]                 @relation("CreatedApiKeys")
 
   @@map("users")
 }
@@ -166,6 +190,10 @@ model Organization {
   documents     CustomerDocument[]
   tickets       Ticket[]
   articles      KnowledgeArticle[]
+  workflows     WorkflowRule[]
+  apiKeys       ApiKey[]
+  webhooks      WebhookEndpoint[]
+  customFields  CustomFieldDefinition[]
 
   @@map("organizations")
 }
@@ -262,6 +290,7 @@ model Conversation {
   participants   ConversationParticipant[]
   messages       Message[]
   tickets        Ticket[]
+  aiInsights     AiInsight[]
 
   @@map("conversations")
 }
@@ -610,6 +639,113 @@ model KnowledgeArticle {
   author         User         @relation("AuthoredArticles", fields: [authorId], references: [id], onDelete: Cascade)
 
   @@map("knowledge_articles")
+}
+
+model WorkflowRule {
+  id             String              @id @default(uuid())
+  organizationId String
+  createdById    String
+  name           String
+  triggerType    WorkflowTriggerType
+  actionType     WorkflowActionType
+  isActive       Boolean             @default(true)
+  config         Json
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy      User                @relation("CreatedWorkflows", fields: [createdById], references: [id], onDelete: Cascade)
+  executions     WorkflowExecution[]
+
+  @@map("workflow_rules")
+}
+
+model WorkflowExecution {
+  id             String       @id @default(uuid())
+  workflowRuleId String
+  status         String       @default("SUCCESS")
+  output         Json?
+  executedAt     DateTime     @default(now())
+
+  rule           WorkflowRule @relation(fields: [workflowRuleId], references: [id], onDelete: Cascade)
+
+  @@map("workflow_executions")
+}
+
+model ApiKey {
+  id             String       @id @default(uuid())
+  organizationId String
+  createdById    String
+  name           String
+  keyHash        String       @unique
+  prefix         String
+  expiresAt      DateTime?
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy      User         @relation("CreatedApiKeys", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
+}
+
+model WebhookEndpoint {
+  id             String         @id @default(uuid())
+  organizationId String
+  url            String
+  secret         String
+  events         String[]
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  deliveries     WebhookEvent[]
+
+  @@map("webhook_endpoints")
+}
+
+model WebhookEvent {
+  id                String          @id @default(uuid())
+  webhookEndpointId String
+  eventType         String
+  payload           Json
+  responseCode      Int?
+  status            String          @default("DELIVERED")
+  createdAt         DateTime        @default(now())
+
+  endpoint          WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id], onDelete: Cascade)
+
+  @@map("webhook_events")
+}
+
+model CustomFieldDefinition {
+  id             String              @id @default(uuid())
+  organizationId String
+  entityType     String
+  fieldKey       String
+  label          String
+  dataType       CustomFieldDataType @default(STRING)
+  isRequired     Boolean             @default(false)
+  options        String[]            @default([])
+  createdAt      DateTime            @default(now())
+
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, entityType, fieldKey])
+  @@map("custom_field_definitions")
+}
+
+model AiInsight {
+  id             String       @id @default(uuid())
+  conversationId String
+  sentiment      String       @default("NEUTRAL")
+  summary        String
+  nextBestAction String?
+  leadScore      Int?
+  createdAt      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("ai_insights")
 }
 
 model AuditLog {

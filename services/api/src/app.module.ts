@@ -7,6 +7,11 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { CrmModule } from './modules/crm/crm.module';
 import { Customer360Module } from './modules/customer360/customer360.module';
 import { SupportModule } from './modules/support/support.module';
+import { AutomationModule } from './modules/automation/automation.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { AiModule } from './modules/ai/ai.module';
+import { PlatformModule } from './modules/platform/platform.module';
+import { EnterpriseModule } from './modules/enterprise/enterprise.module';
 
 @Module({
   imports: [
@@ -18,6 +23,11 @@ import { SupportModule } from './modules/support/support.module';
     CrmModule,
     Customer360Module,
     SupportModule,
+    AutomationModule,
+    AnalyticsModule,
+    AiModule,
+    PlatformModule,
+    EnterpriseModule,
   ],
 })
 export class AppModule {}
