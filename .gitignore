@@ -36,3 +36,6 @@ Thumbs.db
 # Coverage reports
 coverage/
 .nyc_output/
+
+# CI / Workflows (PAT scope limitation)
+.github/
