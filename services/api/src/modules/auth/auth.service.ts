@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException, UnauthorizedException, ConflictException } from '@nestjs/common';
-import { prisma, SystemRoleName } from '@easychat/database';
+import { prisma } from '@easychat/database';
 import { hashPassword, comparePassword, generateToken, getPermissionsForRole } from '@easychat/auth';
 import { RegisterDto, LoginDto, RefreshTokenDto, SystemRole, ApiResponse } from '@easychat/shared';
 
@@ -9,7 +9,8 @@ export class AuthService {
   private readonly jwtRefreshSecret = process.env.JWT_REFRESH_SECRET || 'super-secret-refresh-key-easychat-crm-2026-production-change-me';
 
   async register(dto: RegisterDto): Promise<ApiResponse> {
-    const existingUser = await prisma.user.findUnique({ where: { email: dto.email } });
+    const normalizedEmail = dto.email.toLowerCase().trim();
+    const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existingUser) {
       throw new ConflictException('User with this email address already exists');
     }
@@ -19,7 +20,7 @@ export class AuthService {
 
     const user = await prisma.user.create({
       data: {
-        email: dto.email,
+        email: normalizedEmail,
         passwordHash,
         firstName: dto.firstName,
         lastName: dto.lastName,
@@ -38,7 +39,7 @@ export class AuthService {
       data: {
         organizationId: org.id,
         userId: user.id,
-        role: SystemRoleName.OWNER,
+        role: 'OWNER',
       },
     });
 
@@ -103,8 +104,9 @@ export class AuthService {
   }
 
   async login(dto: LoginDto): Promise<ApiResponse> {
+    const normalizedEmail = dto.email.toLowerCase().trim();
     const user = await prisma.user.findUnique({
-      where: { email: dto.email },
+      where: { email: normalizedEmail },
       include: {
         memberships: {
           include: { organization: true },

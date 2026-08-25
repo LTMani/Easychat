@@ -5,6 +5,19 @@ import Link from 'next/link';
 import { Users, Plus, Building, Mail, Phone, Tag } from 'lucide-react';
 import { NotificationBell } from '../../../components/NotificationBell';
 
+const parseTags = (tags: any): string[] => {
+  if (Array.isArray(tags)) return tags;
+  if (typeof tags === 'string' && tags.trim().length > 0) {
+    try {
+      const parsed = JSON.parse(tags);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      return [tags];
+    }
+  }
+  return [];
+};
+
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,40 +115,49 @@ export default function ContactsPage() {
           </div>
         ) : (
           <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm divide-y divide-slate-100">
-            {contacts.map((contact) => (
-              <div key={contact.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center">
-                    {contact.firstName.charAt(0)}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-slate-900">
-                      {contact.firstName} {contact.lastName}
-                    </div>
-                    <div className="text-xs text-slate-500 flex items-center space-x-3 mt-0.5">
-                      <span className="flex items-center space-x-1">
-                        <Mail className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{contact.email}</span>
-                      </span>
-                      {contact.phone && (
+            {contacts.map((contact) => {
+              const tagsArray = parseTags(contact.tags);
+              return (
+                <div key={contact.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
+                  <div className="flex items-center space-x-4">
+                    <Link
+                      href={`/contacts/${contact.id}`}
+                      className="w-10 h-10 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center hover:bg-blue-200 transition-colors"
+                    >
+                      {contact.firstName?.charAt(0) || 'C'}
+                    </Link>
+                    <div>
+                      <Link
+                        href={`/contacts/${contact.id}`}
+                        className="font-semibold text-slate-900 hover:text-blue-600 transition-colors"
+                      >
+                        {contact.firstName} {contact.lastName}
+                      </Link>
+                      <div className="text-xs text-slate-500 flex items-center space-x-3 mt-0.5">
                         <span className="flex items-center space-x-1">
-                          <Phone className="w-3.5 h-3.5 text-slate-400" />
-                          <span>{contact.phone}</span>
+                          <Mail className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{contact.email}</span>
                         </span>
-                      )}
+                        {contact.phone && (
+                          <span className="flex items-center space-x-1">
+                            <Phone className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{contact.phone}</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center space-x-2">
-                  {contact.tags?.map((t: string) => (
-                    <span key={t} className="px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 rounded-md">
-                      {t}
-                    </span>
-                  ))}
+                  <div className="flex items-center space-x-2">
+                    {tagsArray.map((t: string) => (
+                      <span key={t} className="px-2.5 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 rounded-md">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
