@@ -29,6 +29,7 @@ import {
   Package,
   UserCheck,
   DollarSign,
+  Bot,
 } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 
@@ -43,6 +44,7 @@ const navigationItems = [
   { name: 'CPQ Deal Quotes', href: '/quotes', icon: FileText, category: 'CRM & Deals' },
   { name: 'Product Catalog', href: '/products', icon: Package, category: 'CRM & Deals' },
   { name: 'Support Tickets', href: '/tickets', icon: LifeBuoy, category: 'Customer Support' },
+  { name: 'AI Customer Bot', href: '/ai/customer-bot', icon: Bot, category: 'Customer Support' },
   { name: 'SLA Engine', href: '/sla', icon: ShieldCheck, category: 'Customer Support' },
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen, category: 'Customer Support' },
   { name: 'Automation Engine', href: '/automation', icon: Zap, category: 'Platform' },
