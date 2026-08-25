@@ -4,7 +4,7 @@
   "private": true,
   "description": "Conversation-First Customer Relationship Management Platform",
   "author": "EasyChat Team",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "workspaces": [
     "apps/*",
     "services/*",
