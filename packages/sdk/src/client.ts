@@ -97,4 +97,20 @@ export class EasyChatHttpClient {
       };
     }
   }
+
+  public async get<T = any>(endpoint: string, queryParams?: Record<string, any>): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'GET', queryParams });
+  }
+
+  public async post<T = any>(endpoint: string, body?: any): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'POST', body });
+  }
+
+  public async put<T = any>(endpoint: string, body?: any): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'PUT', body });
+  }
+
+  public async delete<T = any>(endpoint: string): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { method: 'DELETE' });
+  }
 }

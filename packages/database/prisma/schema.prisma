@@ -7,6 +7,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// ==========================================
+// USER & IDENTITY MODELS
+// ==========================================
+
 model User {
   id               String               @id @default(uuid())
   email            String               @unique
@@ -14,8 +18,15 @@ model User {
   firstName        String
   lastName         String
   avatarUrl        String?
+  phone            String?
+  jobTitle         String?
+  department       String?
+  timezone         String               @default("UTC")
+  locale           String               @default("en-US")
   isEmailVerified  Boolean              @default(false)
   twoFactorEnabled Boolean              @default(false)
+  twoFactorSecret  String?
+  status           String               @default("ACTIVE")
   createdAt        DateTime             @default(now())
   updatedAt        DateTime             @updatedAt
 
@@ -39,6 +50,7 @@ model User {
   assignedTickets       Ticket[]                 @relation("AssignedTickets")
   ticketComments        TicketComment[]          @relation("UserTicketComments")
   authoredArticles      KnowledgeArticle[]       @relation("AuthoredArticles")
+  articleVersions       KnowledgeArticleVersion[]@relation("VersionAuthors")
   activities            Activity[]               @relation("UserActivities")
   createdWorkflows      WorkflowRule[]           @relation("CreatedWorkflows")
   apiKeys               ApiKey[]                 @relation("CreatedApiKeys")
@@ -47,6 +59,11 @@ model User {
   cannedResponses       CannedResponse[]         @relation("CreatedCannedResponses")
   campaigns             BroadcastCampaign[]      @relation("CreatedCampaigns")
   customerNotes         CustomerNote[]           @relation("AuthoredNotes")
+  createdQuotes         DealQuote[]              @relation("CreatedQuotes")
+  createdPrompts        AiPromptTemplate[]       @relation("CreatedPrompts")
+  managedQueues         TicketQueueMember[]
+  csatResponses         CsatResponse[]           @relation("AgentCsatResponses")
+  etlJobs               EtlImportJob[]           @relation("UserEtlJobs")
 
   @@map("users")
 }
@@ -56,6 +73,13 @@ model Organization {
   name          String
   slug          String               @unique
   logoUrl       String?
+  domain        String?
+  industry      String?
+  currency      String               @default("USD")
+  timezone      String               @default("UTC")
+  maxUsers      Int                  @default(10)
+  status        String               @default("ACTIVE")
+  metadata      String?
   createdAt     DateTime             @default(now())
   updatedAt     DateTime             @updatedAt
 
@@ -74,6 +98,7 @@ model Organization {
   tasks         Task[]
   documents     CustomerDocument[]
   tickets       Ticket[]
+  ticketQueues  TicketQueue[]
   articles      KnowledgeArticle[]
   workflows     WorkflowRule[]
   apiKeys       ApiKey[]
@@ -87,6 +112,15 @@ model Organization {
   campaigns     BroadcastCampaign[]
   macros        Macro[]
   leadScoring   LeadScoringRule[]
+  subscriptions Subscription[]
+  invoices      SubscriptionInvoice[]
+  products      ProductCatalog[]
+  csatSurveys   CsatSurvey[]
+  prompts       AiPromptTemplate[]
+  routingRules  TicketRoutingRule[]
+  tags          EntityTag[]
+  etlJobs       EtlImportJob[]
+  ssoConfigs    SamlSsoConfig[]
 
   @@map("organizations")
 }
@@ -96,12 +130,14 @@ model Team {
   organizationId String
   name           String
   description    String?
+  leadUserId     String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members        TeamMember[]
   tickets        Ticket[]     @relation("TeamTickets")
+  queues         TicketQueue[]
 
   @@map("teams")
 }
@@ -112,6 +148,7 @@ model OrganizationMember {
   userId         String
   role           String       @default("MEMBER")
   status         String       @default("ACTIVE")
+  invitedBy      String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -127,6 +164,7 @@ model TeamMember {
   id                   String             @id @default(uuid())
   teamId               String
   organizationMemberId String
+  role                 String             @default("MEMBER")
   createdAt            DateTime           @default(now())
 
   team                 Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -142,6 +180,7 @@ model Session {
   token     String   @unique
   ipAddress String?
   userAgent String?
+  deviceType String?
   expiresAt DateTime
   createdAt DateTime @default(now())
 
@@ -163,12 +202,108 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+model SamlSsoConfig {
+  id             String       @id @default(uuid())
+  organizationId String
+  idpEntityId    String
+  ssoUrl         String
+  certificate    String
+  domain         String       @unique
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("saml_sso_configs")
+}
+
+// ==========================================
+// BILLING & SUBSCRIPTION MODELS
+// ==========================================
+
+model SubscriptionPlan {
+  id             String         @id @default(uuid())
+  name           String
+  code           String         @unique
+  description    String?
+  priceMonthly   Float
+  priceYearly    Float
+  maxSeats       Int            @default(5)
+  maxContacts    Int            @default(1000)
+  maxWorkflows   Int            @default(10)
+  features       String         @default("[]")
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+
+  subscriptions  Subscription[]
+
+  @@map("subscription_plans")
+}
+
+model Subscription {
+  id                 String           @id @default(uuid())
+  organizationId     String
+  planId             String
+  status             String           @default("ACTIVE")
+  billingCycle       String           @default("MONTHLY")
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean          @default(false)
+  stripeCustomerId   String?
+  stripeSubId        String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  organization       Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan               SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+  usageRecords       UsageRecord[]
+  invoices           SubscriptionInvoice[]
+
+  @@map("subscriptions")
+}
+
+model SubscriptionInvoice {
+  id             String       @id @default(uuid())
+  organizationId String
+  subscriptionId String?
+  number         String       @unique
+  amount         Float
+  currency       String       @default("USD")
+  status         String       @default("PAID")
+  pdfUrl         String?
+  paidAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  subscription   Subscription?@relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+
+  @@map("subscription_invoices")
+}
+
+model UsageRecord {
+  id             String       @id @default(uuid())
+  subscriptionId String
+  metric         String
+  quantity       Int          @default(1)
+  recordedAt     DateTime     @default(now())
+
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@map("usage_records")
+}
+
+// ==========================================
+// CHANNELS & OMNICHANNEL INTEGRATIONS
+// ==========================================
+
 model ChannelConfig {
   id             String       @id @default(uuid())
   organizationId String
   type           String       @default("WHATSAPP")
   name           String
   credentials    String       @default("{}")
+  settings       String       @default("{}")
   isActive       Boolean      @default(true)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -176,6 +311,7 @@ model ChannelConfig {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   conversations  Conversation[]
   webhookLogs    ChannelWebhookLog[]
+  telephonyTrunks TelephonyTrunk[]
 
   @@map("channel_configs")
 }
@@ -186,12 +322,50 @@ model ChannelWebhookLog {
   eventType       String
   payload         String        @default("{}")
   status          String        @default("PROCESSED")
+  errorMessage    String?
   createdAt       DateTime      @default(now())
 
   channelConfig   ChannelConfig @relation(fields: [channelConfigId], references: [id], onDelete: Cascade)
 
   @@map("channel_webhook_logs")
 }
+
+model TelephonyTrunk {
+  id              String        @id @default(uuid())
+  channelConfigId String
+  sipDomain       String
+  username        String
+  authPassword    String
+  inboundNumber   String
+  isRecordCalls   Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+
+  channelConfig   ChannelConfig @relation(fields: [channelConfigId], references: [id], onDelete: Cascade)
+  voiceSessions   VoiceCallSession[]
+
+  @@map("telephony_trunks")
+}
+
+model VoiceCallSession {
+  id              String        @id @default(uuid())
+  trunkId         String
+  callerNumber    String
+  calleeNumber    String
+  direction       String        @default("INBOUND")
+  durationSeconds Int           @default(0)
+  recordingUrl    String?
+  status          String        @default("COMPLETED")
+  startedAt       DateTime      @default(now())
+  endedAt         DateTime?
+
+  trunk           TelephonyTrunk @relation(fields: [trunkId], references: [id], onDelete: Cascade)
+
+  @@map("voice_call_sessions")
+}
+
+// ==========================================
+// CONVERSATION & MESSAGING ENGINE
+// ==========================================
 
 model Conversation {
   id             String           @id @default(uuid())
@@ -201,6 +375,8 @@ model Conversation {
   dealId         String?
   type           String           @default("DIRECT")
   title          String?
+  status         String           @default("OPEN")
+  priority       String           @default("MEDIUM")
   description    String?
   createdById    String
   metadata       String?
@@ -297,6 +473,7 @@ model CannedResponse {
   title          String
   content        String
   category       String       @default("GENERAL")
+  usageCount     Int          @default(0)
   createdAt      DateTime     @default(now())
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -335,6 +512,10 @@ model UserPresence {
   @@map("user_presence")
 }
 
+// ==========================================
+// CRM & CUSTOMER 360 CDP MODELS
+// ==========================================
+
 model Company {
   id             String       @id @default(uuid())
   organizationId String
@@ -344,6 +525,9 @@ model Company {
   employeeCount  Int?
   annualRevenue  Float?
   website        String?
+  address        String?
+  city           String?
+  country        String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -365,6 +549,11 @@ model Contact {
   email          String
   phone          String?
   jobTitle       String?
+  avatarUrl      String?
+  city           String?
+  country        String?
+  lifetimeValue  Float        @default(0.0)
+  leadScore      Int          @default(0)
   tags           String       @default("[]")
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -378,6 +567,9 @@ model Contact {
   documents      CustomerDocument[]
   tickets        Ticket[]
   notes          CustomerNote[]
+  csatResponses  CsatResponse[]
+  tagAssignments TagAssignment[]
+  customValues   CustomFieldValue[]
 
   @@map("contacts")
 }
@@ -463,6 +655,23 @@ model PipelineStage {
   @@map("pipeline_stages")
 }
 
+model ProductCatalog {
+  id             String             @id @default(uuid())
+  organizationId String
+  name           String
+  sku            String             @unique
+  description    String?
+  unitPrice      Float
+  currency       String             @default("USD")
+  isActive       Boolean            @default(true)
+  createdAt      DateTime           @default(now())
+
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  quoteItems     DealQuoteLineItem[]
+
+  @@map("product_catalog")
+}
+
 model Deal {
   id                String        @id @default(uuid())
   organizationId    String
@@ -489,8 +698,45 @@ model Deal {
   conversations     Conversation[]
   activities        Activity[]
   tasks             Task[]
+  quotes            DealQuote[]
 
   @@map("deals")
+}
+
+model DealQuote {
+  id             String              @id @default(uuid())
+  dealId         String
+  createdById    String
+  quoteNumber    String              @unique
+  totalAmount    Float
+  taxAmount      Float               @default(0.0)
+  discountAmount Float               @default(0.0)
+  status         String              @default("DRAFT")
+  validUntil     DateTime
+  notes          String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  deal           Deal                @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  createdBy      User                @relation("CreatedQuotes", fields: [createdById], references: [id], onDelete: Cascade)
+  lineItems      DealQuoteLineItem[]
+
+  @@map("deal_quotes")
+}
+
+model DealQuoteLineItem {
+  id             String         @id @default(uuid())
+  quoteId        String
+  productId      String
+  quantity       Int            @default(1)
+  unitPrice      Float
+  discount       Float          @default(0.0)
+  totalPrice     Float
+
+  quote          DealQuote      @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  product        ProductCatalog @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@map("deal_quote_line_items")
 }
 
 model Activity {
@@ -523,6 +769,7 @@ model Task {
   title          String
   description    String?
   status         String       @default("PENDING")
+  priority       String       @default("MEDIUM")
   dueAt          DateTime?
   completedAt    DateTime?
   createdAt      DateTime     @default(now())
@@ -556,45 +803,150 @@ model CustomerDocument {
   @@map("customer_documents")
 }
 
-model SlaPolicy {
-  id                 String   @id @default(uuid())
-  organizationId     String
-  name               String
-  priority           String   @default("MEDIUM")
-  firstResponseMinutes Int    @default(60)
-  resolutionMinutes  Int      @default(480)
-  isDefault          Boolean  @default(false)
-  createdAt          DateTime @default(now())
+// ==========================================
+// DATA ETL & BULK IMPORT ENGINE
+// ==========================================
 
-  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+model EtlImportJob {
+  id             String       @id @default(uuid())
+  organizationId String
+  createdById    String
+  entityType     String       @default("CONTACT")
+  fileName       String
+  totalRows      Int          @default(0)
+  processedRows  Int          @default(0)
+  failedRows     Int          @default(0)
+  status         String       @default("PENDING")
+  fieldMapping   String       @default("{}")
+  errorSummary   String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy      User         @relation("UserEtlJobs", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("etl_import_jobs")
+}
+
+// ==========================================
+// HELPDESK, SLA & TICKET QUEUE MODELS
+// ==========================================
+
+model SlaPolicy {
+  id                   String      @id @default(uuid())
+  organizationId       String
+  name                 String
+  description          String?
+  priority             String      @default("MEDIUM")
+  firstResponseMinutes Int         @default(60)
+  nextResponseMinutes  Int         @default(120)
+  resolutionMinutes    Int         @default(480)
+  isDefault            Boolean     @default(false)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+
+  organization         Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  tickets              Ticket[]
+  breachLogs           SlaBreachLog[]
 
   @@map("sla_policies")
+}
+
+model SlaBreachLog {
+  id             String       @id @default(uuid())
+  slaPolicyId    String
+  ticketId       String
+  breachType     String       @default("FIRST_RESPONSE")
+  targetMinutes  Int
+  actualMinutes  Int
+  breachedAt     DateTime     @default(now())
+
+  slaPolicy      SlaPolicy    @relation(fields: [slaPolicyId], references: [id], onDelete: Cascade)
+  ticket         Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("sla_breach_logs")
+}
+
+model TicketQueue {
+  id             String              @id @default(uuid())
+  organizationId String
+  teamId         String?
+  name           String
+  description    String?
+  strategy       String              @default("ROUND_ROBIN")
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  team           Team?               @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  members        TicketQueueMember[]
+  tickets        Ticket[]
+
+  @@map("ticket_queues")
+}
+
+model TicketQueueMember {
+  id             String       @id @default(uuid())
+  queueId        String
+  userId         String
+  isAvailable    Boolean      @default(true)
+  maxTicketCount Int          @default(10)
+  assignedCount  Int          @default(0)
+
+  queue          TicketQueue  @relation(fields: [queueId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([queueId, userId])
+  @@map("ticket_queue_members")
+}
+
+model TicketRoutingRule {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  conditionJson  String       @default("{}")
+  targetQueueId  String
+  priority       Int          @default(1)
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("ticket_routing_rules")
 }
 
 model Ticket {
   id                 String         @id @default(uuid())
   organizationId     String
   teamId             String?
+  queueId            String?
   contactId          String?
   conversationId     String?
   assignedToId       String?
+  slaPolicyId        String?
   ticketNumber       String         @unique
   subject            String
   description        String
   priority           String         @default("MEDIUM")
   status             String         @default("OPEN")
+  category           String         @default("GENERAL")
   firstResponseDueAt DateTime?
   resolutionDueAt   DateTime?
+  firstRespondedAt   DateTime?
   resolvedAt         DateTime?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
 
   organization       Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   team               Team?          @relation("TeamTickets", fields: [teamId], references: [id], onDelete: SetNull)
+  queue              TicketQueue?   @relation(fields: [queueId], references: [id], onDelete: SetNull)
   contact            Contact?       @relation(fields: [contactId], references: [id], onDelete: SetNull)
   conversation       Conversation?  @relation(fields: [conversationId], references: [id], onDelete: SetNull)
   assignedTo         User?          @relation("AssignedTickets", fields: [assignedToId], references: [id], onDelete: SetNull)
+  slaPolicy          SlaPolicy?     @relation(fields: [slaPolicyId], references: [id], onDelete: SetNull)
   comments           TicketComment[]
+  breachLogs         SlaBreachLog[]
+  csatResponses      CsatResponse[]
 
   @@map("tickets")
 }
@@ -605,6 +957,7 @@ model TicketComment {
   userId     String
   isInternal Boolean  @default(false)
   content    String
+  attachments String  @default("[]")
   createdAt  DateTime @default(now())
 
   ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
@@ -613,30 +966,123 @@ model TicketComment {
   @@map("ticket_comments")
 }
 
-model KnowledgeArticle {
+model CsatSurvey {
   id             String       @id @default(uuid())
+  organizationId String
+  title          String
+  question       String       @default("How satisfied are you with our support?")
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  responses      CsatResponse[]
+
+  @@map("csat_surveys")
+}
+
+model CsatResponse {
+  id             String       @id @default(uuid())
+  surveyId       String
+  ticketId       String
+  contactId      String
+  agentId        String?
+  rating         Int          // 1 to 5
+  feedback       String?
+  createdAt      DateTime     @default(now())
+
+  survey         CsatSurvey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  ticket         Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  contact        Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  agent          User?        @relation("AgentCsatResponses", fields: [agentId], references: [id], onDelete: SetNull)
+
+  @@map("csat_responses")
+}
+
+// ==========================================
+// KNOWLEDGE BASE & AI ENGINE MODELS
+// ==========================================
+
+model KnowledgeArticle {
+  id             String                   @id @default(uuid())
   organizationId String
   authorId       String
   title          String
-  slug           String       @unique
+  slug           String                   @unique
   category       String
   content        String
-  isPublished    Boolean      @default(true)
-  viewCount      Int          @default(0)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  isPublished    Boolean                  @default(true)
+  viewCount      Int                      @default(0)
+  helpfulCount   Int                      @default(0)
+  unhelpfulCount Int                      @default(0)
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
 
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  author         User         @relation("AuthoredArticles", fields: [authorId], references: [id], onDelete: Cascade)
+  organization   Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  author         User                     @relation("AuthoredArticles", fields: [authorId], references: [id], onDelete: Cascade)
+  versions       KnowledgeArticleVersion[]
 
   @@map("knowledge_articles")
 }
+
+model KnowledgeArticleVersion {
+  id          String           @id @default(uuid())
+  articleId   String
+  authorId    String
+  version     Int
+  title       String
+  content     String
+  changeLog   String?
+  createdAt   DateTime         @default(now())
+
+  article     KnowledgeArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  author      User             @relation("VersionAuthors", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("knowledge_article_versions")
+}
+
+model AiPromptTemplate {
+  id             String       @id @default(uuid())
+  organizationId String
+  createdById    String
+  name           String
+  purpose        String       @default("SUMMARIZATION")
+  promptText     String
+  temperature    Float        @default(0.7)
+  modelName      String       @default("gpt-4-turbo")
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy      User         @relation("CreatedPrompts", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("ai_prompt_templates")
+}
+
+model AiInsight {
+  id             String       @id @default(uuid())
+  conversationId String
+  sentiment      String       @default("NEUTRAL")
+  summary        String
+  nextBestAction String?
+  leadScore      Int?
+  suggestedReply String?
+  createdAt      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("ai_insights")
+}
+
+// ==========================================
+// WORKFLOW & AUTOMATION ENGINE MODELS
+// ==========================================
 
 model WorkflowRule {
   id             String              @id @default(uuid())
   organizationId String
   createdById    String
   name           String
+  description    String?
   triggerType    String
   actionType     String
   isActive       Boolean             @default(true)
@@ -683,13 +1129,19 @@ model WorkflowExecution {
   id             String       @id @default(uuid())
   workflowRuleId String
   status         String       @default("SUCCESS")
+  executionTimeMs Int         @default(0)
   output         String?
+  errorMessage   String?
   executedAt     DateTime     @default(now())
 
   rule           WorkflowRule @relation(fields: [workflowRuleId], references: [id], onDelete: Cascade)
 
   @@map("workflow_executions")
 }
+
+// ==========================================
+// MARKETING & CAMPAIGN TEMPLATES
+// ==========================================
 
 model EmailTemplate {
   id             String       @id @default(uuid())
@@ -700,6 +1152,7 @@ model EmailTemplate {
   bodyHtml       String
   bodyText       String?
   variables      String       @default("[]")
+  category       String       @default("MARKETING")
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -721,6 +1174,7 @@ model BroadcastCampaign {
   status         String       @default("DRAFT")
   sentCount      Int          @default(0)
   openCount      Int          @default(0)
+  clickCount     Int          @default(0)
   scheduledAt    DateTime?
   sentAt         DateTime?
   createdAt      DateTime     @default(now())
@@ -764,6 +1218,10 @@ model ReportDefinition {
   @@map("report_definitions")
 }
 
+// ==========================================
+// AUDIT, SECURITY & EXTENSIBILITY
+// ==========================================
+
 model ApiKey {
   id             String       @id @default(uuid())
   organizationId String
@@ -771,7 +1229,9 @@ model ApiKey {
   name           String
   keyHash        String       @unique
   prefix         String
+  permissions    String       @default("[]")
   expiresAt      DateTime?
+  lastUsedAt     DateTime?
   createdAt      DateTime     @default(now())
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -801,7 +1261,9 @@ model WebhookEvent {
   eventType         String
   payload           String          @default("{}")
   responseCode      Int?
+  responseBody      String?
   status            String          @default("DELIVERED")
+  retryCount        Int             @default(0)
   createdAt         DateTime        @default(now())
 
   endpoint          WebhookEndpoint @relation(fields: [webhookEndpointId], references: [id], onDelete: Cascade)
@@ -821,23 +1283,50 @@ model CustomFieldDefinition {
   createdAt      DateTime     @default(now())
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  values         CustomFieldValue[]
 
   @@unique([organizationId, entityType, fieldKey])
   @@map("custom_field_definitions")
 }
 
-model AiInsight {
+model CustomFieldValue {
+  id             String                @id @default(uuid())
+  definitionId   String
+  contactId      String?
+  value          String
+
+  definition     CustomFieldDefinition @relation(fields: [definitionId], references: [id], onDelete: Cascade)
+  contact        Contact?              @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  @@map("custom_field_values")
+}
+
+model EntityTag {
+  id             String          @id @default(uuid())
+  organizationId String
+  name           String
+  color          String          @default("#3b82f6")
+  createdAt      DateTime        @default(now())
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  assignments    TagAssignment[]
+
+  @@unique([organizationId, name])
+  @@map("entity_tags")
+}
+
+model TagAssignment {
   id             String       @id @default(uuid())
-  conversationId String
-  sentiment      String       @default("NEUTRAL")
-  summary        String
-  nextBestAction String?
-  leadScore      Int?
+  tagId          String
+  contactId      String?
+  entityType     String       @default("CONTACT")
+  entityId       String
   createdAt      DateTime     @default(now())
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  tag            EntityTag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  contact        Contact?     @relation(fields: [contactId], references: [id], onDelete: Cascade)
 
-  @@map("ai_insights")
+  @@map("tag_assignments")
 }
 
 model AuditLog {
@@ -849,6 +1338,7 @@ model AuditLog {
   entityId       String?
   metadata       String?
   ipAddress      String?
+  userAgent      String?
   createdAt      DateTime      @default(now())
 
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)

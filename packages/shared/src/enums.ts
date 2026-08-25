@@ -39,13 +39,22 @@ export enum Permission {
   DEAL_UPDATE = 'deal:update',
   DEAL_DELETE = 'deal:delete',
 
-  // Ticket Permissions
+  // Ticket & SLA Permissions
   TICKET_CREATE = 'ticket:create',
   TICKET_READ = 'ticket:read',
   TICKET_UPDATE = 'ticket:update',
   TICKET_DELETE = 'ticket:delete',
+  SLA_MANAGE = 'sla:manage',
 
-  // Audit Logs
+  // Billing & Subscriptions
+  BILLING_READ = 'billing:read',
+  BILLING_MANAGE = 'billing:manage',
+
+  // AI & Workflow Engine
+  AI_MANAGE = 'ai:manage',
+  WORKFLOW_MANAGE = 'workflow:manage',
+
+  // Audit & Security Logs
   AUDIT_READ = 'audit:read',
 }
 
@@ -66,6 +75,7 @@ export enum MessageType {
   IMAGE = 'IMAGE',
   FILE = 'FILE',
   SYSTEM = 'SYSTEM',
+  AUDIO = 'AUDIO',
 }
 
 export enum NotificationType {
@@ -73,6 +83,7 @@ export enum NotificationType {
   NEW_MESSAGE = 'NEW_MESSAGE',
   ASSIGNMENT = 'ASSIGNMENT',
   SYSTEM = 'SYSTEM',
+  SLA_BREACH = 'SLA_BREACH',
 }
 
 export enum PresenceStatus {
@@ -138,11 +149,37 @@ export enum TicketStatus {
   CLOSED = 'CLOSED',
 }
 
+export enum SlaBreachType {
+  FIRST_RESPONSE = 'FIRST_RESPONSE',
+  NEXT_RESPONSE = 'NEXT_RESPONSE',
+  RESOLUTION = 'RESOLUTION',
+}
+
+export enum QueueRoutingStrategy {
+  ROUND_ROBIN = 'ROUND_ROBIN',
+  LOAD_BALANCED = 'LOAD_BALANCED',
+  SKILL_BASED = 'SKILL_BASED',
+}
+
+export enum SubscriptionBillingCycle {
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY',
+}
+
+export enum SubscriptionStatus {
+  ACTIVE = 'ACTIVE',
+  PAST_DUE = 'PAST_DUE',
+  CANCELED = 'CANCELED',
+  TRIALING = 'TRIALING',
+}
+
 export enum WorkflowTriggerType {
   LEAD_CREATED = 'LEAD_CREATED',
   DEAL_STAGE_CHANGED = 'DEAL_STAGE_CHANGED',
   TICKET_CREATED = 'TICKET_CREATED',
   MESSAGE_RECEIVED = 'MESSAGE_RECEIVED',
+  SLA_BREACHED = 'SLA_BREACHED',
+  CSAT_SUBMITTED = 'CSAT_SUBMITTED',
 }
 
 export enum WorkflowActionType {
@@ -150,6 +187,8 @@ export enum WorkflowActionType {
   ASSIGN_USER = 'ASSIGN_USER',
   CREATE_TASK = 'CREATE_TASK',
   UPDATE_STATUS = 'UPDATE_STATUS',
+  TRIGGER_WEBHOOK = 'TRIGGER_WEBHOOK',
+  SEND_EMAIL_TEMPLATE = 'SEND_EMAIL_TEMPLATE',
 }
 
 export enum CustomFieldDataType {
@@ -185,6 +224,9 @@ export enum AuditAction {
   DOCUMENT_UPLOADED = 'DOCUMENT_UPLOADED',
   TICKET_CREATED = 'TICKET_CREATED',
   TICKET_RESOLVED = 'TICKET_RESOLVED',
+  SLA_POLICY_CREATED = 'SLA_POLICY_CREATED',
+  SLA_BREACH_LOGGED = 'SLA_BREACH_LOGGED',
+  BILLING_SUBSCRIPTION_UPDATED = 'BILLING_SUBSCRIPTION_UPDATED',
   ARTICLE_PUBLISHED = 'ARTICLE_PUBLISHED',
   WORKFLOW_CREATED = 'WORKFLOW_CREATED',
   WORKFLOW_EXECUTED = 'WORKFLOW_EXECUTED',

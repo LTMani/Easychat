@@ -25,7 +25,7 @@ export interface ApiResponse<T = any> {
   error?: {
     code: string;
     details?: any;
-  };
+  } | string;
   meta?: {
     page?: number;
     limit?: number;
@@ -34,9 +34,11 @@ export interface ApiResponse<T = any> {
 }
 
 export interface UserSessionPayload {
+  id?: string;
   userId: string;
   email: string;
   organizationId?: string;
+  teamIds?: string[];
   roles: SystemRole[];
   permissions: Permission[];
 }

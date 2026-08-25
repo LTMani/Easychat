@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Patch, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Customer360Service } from './customer360.service';
+import { CustomerTimelineService } from './customer-timeline.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
@@ -12,13 +13,16 @@ import { Permission, CreateTaskDto, UpdateTaskStatusDto, CreateCustomerDocumentD
 @UseGuards(JwtAuthGuard, RbacGuard)
 @Controller('customer360')
 export class Customer360Controller {
-  constructor(private readonly c360Service: Customer360Service) {}
+  constructor(
+    private readonly c360Service: Customer360Service,
+    private readonly timelineService: CustomerTimelineService
+  ) {}
 
   @Get('timeline/:contactId')
   @RequirePermissions(Permission.CUSTOMER_READ)
   @ApiOperation({ summary: 'Get Customer 360 unified activity timeline' })
   async getTimeline(@CurrentUser() user: UserSessionPayload, @Param('contactId') contactId: string) {
-    return this.c360Service.getTimeline(user.organizationId, contactId);
+    return this.timelineService.getCustomerTimeline(user.organizationId, contactId);
   }
 
   @Post('tasks')

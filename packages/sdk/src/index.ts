@@ -6,6 +6,9 @@ import { AutomationModule } from './automation';
 import { AnalyticsModule } from './analytics';
 import { AiModule } from './ai';
 import { PlatformModule } from './platform';
+import { SlaApi } from './sla';
+import { BillingApi } from './billing';
+import { WebhooksApi } from './webhooks';
 
 export class EasyChatClient {
   public http: EasyChatHttpClient;
@@ -16,6 +19,9 @@ export class EasyChatClient {
   public analytics: AnalyticsModule;
   public ai: AiModule;
   public platform: PlatformModule;
+  public sla: SlaApi;
+  public billing: BillingApi;
+  public webhooks: WebhooksApi;
 
   constructor(config: EasyChatSdkConfig = {}) {
     this.http = new EasyChatHttpClient(config);
@@ -26,6 +32,9 @@ export class EasyChatClient {
     this.analytics = new AnalyticsModule(this.http);
     this.ai = new AiModule(this.http);
     this.platform = new PlatformModule(this.http);
+    this.sla = new SlaApi(this.http);
+    this.billing = new BillingApi(this.http);
+    this.webhooks = new WebhooksApi(this.http);
   }
 
   public setAccessToken(token: string) {
@@ -34,6 +43,22 @@ export class EasyChatClient {
 
   public setApiKey(key: string) {
     this.http.setApiKey(key);
+  }
+
+  public get(path: string) {
+    return this.http.request(path, { method: 'GET' });
+  }
+
+  public post(path: string, body: any) {
+    return this.http.request(path, { method: 'POST', body });
+  }
+
+  public put(path: string, body: any) {
+    return this.http.request(path, { method: 'PUT', body });
+  }
+
+  public delete(path: string) {
+    return this.http.request(path, { method: 'DELETE' });
   }
 }
 
@@ -45,3 +70,6 @@ export * from './automation';
 export * from './analytics';
 export * from './ai';
 export * from './platform';
+export * from './sla';
+export * from './billing';
+export * from './webhooks';

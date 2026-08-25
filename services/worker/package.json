@@ -1,0 +1,24 @@
+{
+  "name": "@easychat/worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Background Queue Worker Microservice for EasyChat CRM Platform",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "ts-node-dev src/main.ts"
+  },
+  "dependencies": {
+    "@easychat/database": "*",
+    "@easychat/shared": "*",
+    "bullmq": "^5.1.0",
+    "ioredis": "^5.3.2",
+    "nodemailer": "^6.9.13"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/nodemailer": "^6.4.14",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.3"
+  }
+}

@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AiService } from './ai.service';
+import { SentimentAnalyzerService } from './sentiment-analyzer.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../../common/decorators/user.decorator';
 import { GenerateAiSummaryDto, UserSessionPayload } from '@easychat/shared';
@@ -10,7 +11,10 @@ import { GenerateAiSummaryDto, UserSessionPayload } from '@easychat/shared';
 @UseGuards(JwtAuthGuard)
 @Controller('ai')
 export class AiController {
-  constructor(private readonly aiService: AiService) {}
+  constructor(
+    private readonly aiService: AiService,
+    private readonly sentimentAnalyzer: SentimentAnalyzerService
+  ) {}
 
   @Post('summaries')
   @ApiOperation({ summary: 'Generate AI conversation summary & next action' })
@@ -22,5 +26,11 @@ export class AiController {
   @ApiOperation({ summary: 'Get AI recommendations & sentiment insights' })
   async getSuggestions(@CurrentUser() user: UserSessionPayload) {
     return this.aiService.getSuggestions(user.organizationId);
+  }
+
+  @Post('analyze-sentiment')
+  @ApiOperation({ summary: 'Analyze message sentiment & detect urgency keywords' })
+  async analyzeSentiment(@Body() body: { text: string }) {
+    return this.sentimentAnalyzer.analyzeText(body.text || '');
   }
 }

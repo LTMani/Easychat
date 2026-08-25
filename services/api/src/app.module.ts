@@ -15,6 +15,19 @@ import { EnterpriseModule } from './modules/enterprise/enterprise.module';
 import { ChannelsModule } from './modules/channels/channels.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { SearchModule } from './modules/search/search.module';
+import { SlaModule } from './modules/sla/sla.module';
+import { BillingModule } from './modules/billing/billing.module';
+import { AuditModule } from './modules/audit/audit.module';
+import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { TelephonyModule } from './modules/telephony/telephony.module';
+import { CsatModule } from './modules/csat/csat.module';
+import { QuotesModule } from './modules/quotes/quotes.module';
+import { EtlModule } from './modules/etl/etl.module';
+import { CustomFieldsModule } from './modules/custom-fields/custom-fields.module';
+import { SsoModule } from './modules/sso/sso.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { MarketingModule } from './modules/marketing/marketing.module';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -34,6 +47,19 @@ import { SearchModule } from './modules/search/search.module';
     ChannelsModule,
     ReportsModule,
     SearchModule,
+    SlaModule,
+    BillingModule,
+    AuditModule,
+    WebhooksModule,
+    TelephonyModule,
+    CsatModule,
+    QuotesModule,
+    EtlModule,
+    CustomFieldsModule,
+    SsoModule,
+    IntegrationsModule,
+    MarketingModule,
+    ProductsModule,
   ],
 })
 export class AppModule {}
