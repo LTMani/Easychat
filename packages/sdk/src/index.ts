@@ -10,6 +10,16 @@ import { SlaApi } from './sla';
 import { BillingApi } from './billing';
 import { WebhooksApi } from './webhooks';
 
+import { CustomFieldsResource } from './resources/custom-fields';
+import { AuditLogsResource } from './resources/audit-logs';
+import { SlaResource } from './resources/sla';
+import { IntegrationsResource } from './resources/integrations';
+import { ContractsResource } from './resources/contracts';
+import { AnalyticsResource } from './resources/analytics';
+import { ProductsResource } from './resources/products';
+import { QuotesResource } from './resources/quotes';
+import { ChannelsResource } from './resources/channels';
+
 export class EasyChatClient {
   public http: EasyChatHttpClient;
   public conversations: ConversationsModule;
@@ -23,6 +33,17 @@ export class EasyChatClient {
   public billing: BillingApi;
   public webhooks: WebhooksApi;
 
+  // Granular Sub-Resources
+  public customFieldsResource: CustomFieldsResource;
+  public auditLogsResource: AuditLogsResource;
+  public slaResource: SlaResource;
+  public integrationsResource: IntegrationsResource;
+  public contractsResource: ContractsResource;
+  public analyticsResource: AnalyticsResource;
+  public productsResource: ProductsResource;
+  public quotesResource: QuotesResource;
+  public channelsResource: ChannelsResource;
+
   constructor(config: EasyChatSdkConfig = {}) {
     this.http = new EasyChatHttpClient(config);
     this.conversations = new ConversationsModule(this.http);
@@ -35,6 +56,18 @@ export class EasyChatClient {
     this.sla = new SlaApi(this.http);
     this.billing = new BillingApi(this.http);
     this.webhooks = new WebhooksApi(this.http);
+
+    const fetcher = (path: string, options?: RequestInit) => this.http.request(path, options as any);
+
+    this.customFieldsResource = new CustomFieldsResource(fetcher);
+    this.auditLogsResource = new AuditLogsResource(fetcher);
+    this.slaResource = new SlaResource(fetcher);
+    this.integrationsResource = new IntegrationsResource(fetcher);
+    this.contractsResource = new ContractsResource(fetcher);
+    this.analyticsResource = new AnalyticsResource(fetcher);
+    this.productsResource = new ProductsResource(fetcher);
+    this.quotesResource = new QuotesResource(fetcher);
+    this.channelsResource = new ChannelsResource(fetcher);
   }
 
   public setAccessToken(token: string) {
@@ -73,3 +106,13 @@ export * from './platform';
 export * from './sla';
 export * from './billing';
 export * from './webhooks';
+
+export * from './resources/custom-fields';
+export * from './resources/audit-logs';
+export * from './resources/sla';
+export * from './resources/integrations';
+export * from './resources/contracts';
+export * from './resources/analytics';
+export * from './resources/products';
+export * from './resources/quotes';
+export * from './resources/channels';
