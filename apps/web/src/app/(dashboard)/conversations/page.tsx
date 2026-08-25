@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Send, Plus, Search, MessageSquare, Users, Circle, Paperclip, ChevronRight, User, DollarSign, CheckSquare, Clock } from 'lucide-react';
+import { Send, Plus, Search, MessageSquare, Users, Circle, Paperclip, ChevronRight, User, DollarSign, CheckSquare, Clock, X } from 'lucide-react';
 import { RealtimeProvider, useRealtime } from '../../../context/RealtimeContext';
 import { NotificationBell } from '../../../components/NotificationBell';
 
@@ -17,6 +17,7 @@ function ChatWorkspace() {
   const [showCrmDrawer, setShowCrmDrawer] = useState(true);
   const [orgMembers, setOrgMembers] = useState<any[]>([]);
   const [selectedMemberId, setSelectedMemberId] = useState('');
+  const [newConvTitle, setNewConvTitle] = useState('');
   const [taskTitle, setTaskTitle] = useState('');
   const [showTaskForm, setShowTaskForm] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -115,6 +116,37 @@ function ChatWorkspace() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const handleCreateConversation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('accessToken');
+      const targetUserId = selectedMemberId || orgMembers[0]?.user?.id;
+      if (!targetUserId) return;
+
+      const res = await fetch('http://localhost:4000/api/v1/conversations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          type: 'DIRECT',
+          title: newConvTitle || 'Direct Conversation',
+          participantUserIds: [targetUserId],
+        }),
+      });
+
+      const resData = await res.json();
+      if (res.ok && resData.data) {
+        setShowNewModal(false);
+        setNewConvTitle('');
+        setSelectedMemberId('');
+        await fetchConversations();
+        setActiveConv(resData.data);
+      }
+    } catch (err) {}
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || !activeConv) return;
@@ -124,7 +156,7 @@ function ChatWorkspace() {
 
     try {
       const token = localStorage.getItem('accessToken');
-      await fetch('http://localhost:4000/api/v1/conversations/messages', {
+      const res = await fetch('http://localhost:4000/api/v1/conversations/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,6 +167,12 @@ function ChatWorkspace() {
           content,
         }),
       });
+
+      const resData = await res.json();
+      if (res.ok && resData.data) {
+        setMessages((prev) => [...prev, resData.data]);
+        fetchConversations();
+      }
     } catch (err) {}
   };
 
@@ -196,15 +234,19 @@ function ChatWorkspace() {
             <h2 className="font-bold text-slate-900 text-sm uppercase tracking-wider">Conversations</h2>
             <button
               onClick={() => setShowNewModal(true)}
-              className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg"
+              className="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg flex items-center space-x-1 font-semibold text-xs transition-colors"
+              title="Start New Conversation"
             >
               <Plus className="w-4 h-4" />
+              <span>New</span>
             </button>
           </div>
 
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
             {conversations.length === 0 ? (
-              <div className="p-6 text-center text-xs text-slate-500">No active conversations</div>
+              <div className="p-6 text-center text-xs text-slate-500">
+                No active conversations. Click <b>+ New</b> above to start a chat!
+              </div>
             ) : (
               conversations.map((conv) => {
                 const partner = conv.participants?.find((p: any) => p.user?.id !== conv?.createdById)?.user;
@@ -273,7 +315,7 @@ function ChatWorkspace() {
                           {msg.sender?.firstName} {msg.sender?.lastName}
                         </span>
                         <span className="text-[10px] text-slate-400">
-                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                       <p className="text-sm text-slate-700 leading-relaxed">{msg.content}</p>
@@ -306,7 +348,7 @@ function ChatWorkspace() {
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
               <MessageSquare className="w-12 h-12 mb-3 text-slate-300" />
-              <p className="text-sm">Select a conversation to begin messaging</p>
+              <p className="text-sm">Select a conversation or click <b>+ New</b> to start a chat</p>
             </div>
           )}
         </div>
@@ -384,6 +426,69 @@ function ChatWorkspace() {
           </div>
         )}
       </div>
+
+      {/* Start New Conversation Modal */}
+      {showNewModal && (
+        <div className="fixed inset-0 bg-slate-900/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 max-w-md w-full shadow-lg">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-slate-900">Start New Conversation</h3>
+              <button
+                type="button"
+                onClick={() => setShowNewModal(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateConversation} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Conversation Title / Topic</label>
+                <input
+                  type="text"
+                  required
+                  value={newConvTitle}
+                  onChange={(e) => setNewConvTitle(e.target.value)}
+                  placeholder="e.g., Enterprise Client Discussion"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Select Participant</label>
+                <select
+                  value={selectedMemberId}
+                  onChange={(e) => setSelectedMemberId(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm"
+                >
+                  <option value="">Select team member...</option>
+                  {orgMembers.map((m: any) => (
+                    <option key={m.user?.id || m.id} value={m.user?.id}>
+                      {m.user?.firstName} {m.user?.lastName} ({m.user?.email})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowNewModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm"
+                >
+                  Start Chat
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
