@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Soc2EvidenceCollectorService } from '../src/modules/audit/soc2-evidence-collector.service';
+import { Soc2EvidenceCollectorService } from '../src/modules/security/soc2-evidence-collector.service';
 
 describe('Soc2EvidenceCollectorService', () => {
   let service: Soc2EvidenceCollectorService;
@@ -11,10 +11,10 @@ describe('Soc2EvidenceCollectorService', () => {
     service = module.get<Soc2EvidenceCollectorService>(Soc2EvidenceCollectorService);
   });
 
-  it('should generate passing SOC2 compliance report with >90% score', () => {
-    const report = service.generateComplianceReport('org_enterprise_1');
-    expect(report.overallStatus).toBe('PASS');
-    expect(report.complianceScorePercent).toBeGreaterThanOrEqual(90);
-    expect(report.items.length).toBeGreaterThan(0);
+  it('should collect SOC 2 Type II controls evidence report', () => {
+    const report = service.collectEvidenceReport();
+    expect(report.length).toBe(4);
+    expect(report.every((r) => r.status === 'COMPLIANT')).toBe(true);
+    expect(report.some((r) => r.controlId === 'CC6.1')).toBe(true);
   });
 });

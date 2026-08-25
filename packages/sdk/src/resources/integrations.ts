@@ -1,65 +1,31 @@
-export interface IntegrationStatus {
-  provider: 'SALESFORCE' | 'HUBSPOT' | 'ZAPIER' | 'SLACK' | 'STRIPE' | 'TWILIO';
-  isConnected: boolean;
-  lastSyncedAt?: string;
-  recordCounts?: Record<string, number>;
-  errorMessage?: string;
-}
+import { EasyChatHttpClient } from '../client';
 
 export class IntegrationsResource {
-  constructor(private readonly fetcher: (path: string, options?: RequestInit) => Promise<any>) {}
+  constructor(private readonly client: EasyChatHttpClient) {}
 
-  async list(): Promise<IntegrationStatus[]> {
-    return this.fetcher('/v1/integrations');
+  async triggerHubspotSync() {
+    return this.client.request('/v1/integrations/hubspot/sync', { method: 'POST' });
   }
 
-  async getStatus(provider: IntegrationStatus['provider']): Promise<IntegrationStatus> {
-    return this.fetcher(`/v1/integrations/${provider.toLowerCase()}/status`);
+  async getSalesforceStatus() {
+    return this.client.request('/v1/integrations/salesforce/status');
   }
 
-  async configureSalesforce(config: {
-    instanceUrl: string;
-    clientId: string;
-    clientSecret: string;
-    refreshToken: string;
-  }): Promise<{ success: boolean }> {
-    return this.fetcher('/v1/integrations/salesforce/configure', {
+  async executeSalesforceSoql(sObject: string, fields: string[], whereClause?: string, limit?: number) {
+    return this.client.request('/v1/integrations/salesforce/soql', {
       method: 'POST',
-      body: JSON.stringify(config),
+      body: JSON.stringify({ sObject, fields, whereClause, limit }),
     });
   }
 
-  async triggerSalesforceSync(entityType?: 'CONTACT' | 'DEAL' | 'ACCOUNT'): Promise<{ queued: boolean; jobId: string }> {
-    return this.fetcher('/v1/integrations/salesforce/sync', {
-      method: 'POST',
-      body: JSON.stringify({ entityType }),
-    });
+  async getMirroredZendeskTickets() {
+    return this.client.request('/v1/integrations/zendesk/mirrored-tickets');
   }
 
-  async configureHubSpot(config: { portalId: string; accessToken: string }): Promise<{ success: boolean }> {
-    return this.fetcher('/v1/integrations/hubspot/configure', {
+  async dispatchStripeWebhook(eventPayload: Record<string, any>) {
+    return this.client.request('/v1/integrations/stripe/webhook', {
       method: 'POST',
-      body: JSON.stringify(config),
-    });
-  }
-
-  async triggerHubSpotSync(): Promise<{ queued: boolean; jobId: string }> {
-    return this.fetcher('/v1/integrations/hubspot/sync', {
-      method: 'POST',
-    });
-  }
-
-  async configureSlack(config: { webhookUrl: string; channelMapping?: Record<string, string> }): Promise<{ success: boolean }> {
-    return this.fetcher('/v1/integrations/slack/configure', {
-      method: 'POST',
-      body: JSON.stringify(config),
-    });
-  }
-
-  async testSlackNotification(channel?: string): Promise<{ success: boolean }> {
-    return this.fetcher('/v1/integrations/slack/test', {
-      method: 'POST',
-      body: JSON.stringify({ channel }),
+      body: JSON.stringify(eventPayload),
     });
   }
 }
