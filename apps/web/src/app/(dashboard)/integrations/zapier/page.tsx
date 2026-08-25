@@ -19,7 +19,7 @@ const ACTIVE_HOOKS = [
 
 export default function ZapierIntegrationPage() {
   const [copiedKey, setCopiedKey] = useState(false);
-  const apiKey = 'ech_live_zap_9948271038472910482';
+  const apiKey = 'ech_live_zap_************************';
 
   const handleCopy = () => {
     navigator.clipboard.writeText(apiKey);

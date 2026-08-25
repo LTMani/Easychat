@@ -11,7 +11,7 @@ export class DeveloperApiKeysController {
         {
           id: 'key_101',
           name: 'Production Server Integration',
-          prefix: 'ech_live_9948',
+          prefix: 'ech_live_••••',
           permissions: ['contacts:read', 'deals:write', 'tickets:read'],
           createdAt: '2026-08-15T00:00:00Z',
           lastUsedAt: '5 mins ago',
