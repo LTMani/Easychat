@@ -1,4 +1,16 @@
-import { SystemRole, Permission, MemberStatus, ConversationType, MessageType, NotificationType, PresenceStatus } from './enums';
+import {
+  SystemRole,
+  Permission,
+  MemberStatus,
+  ConversationType,
+  MessageType,
+  NotificationType,
+  PresenceStatus,
+  LeadStatus,
+  LeadSource,
+  DealStatus,
+  ActivityType,
+} from './enums';
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -118,4 +130,100 @@ export interface PresencePayload {
   status: PresenceStatus;
   customStatus?: string;
   lastActiveAt: string;
+}
+
+export interface CompanyPayload {
+  id: string;
+  organizationId: string;
+  name: string;
+  domain?: string;
+  industry?: string;
+  employeeCount?: number;
+  annualRevenue?: number;
+  website?: string;
+  createdAt: string;
+}
+
+export interface ContactPayload {
+  id: string;
+  organizationId: string;
+  companyId?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  jobTitle?: string;
+  tags: string[];
+  company?: CompanyPayload;
+  createdAt: string;
+}
+
+export interface LeadPayload {
+  id: string;
+  organizationId: string;
+  companyId?: string;
+  title: string;
+  contactName: string;
+  email: string;
+  phone?: string;
+  source: LeadSource;
+  status: LeadStatus;
+  score: number;
+  assignedToId?: string;
+  assignedTo?: UserProfile;
+  company?: CompanyPayload;
+  createdAt: string;
+}
+
+export interface PipelineStagePayload {
+  id: string;
+  pipelineId: string;
+  name: string;
+  position: number;
+  probability: number;
+  color?: string;
+}
+
+export interface PipelinePayload {
+  id: string;
+  organizationId: string;
+  name: string;
+  isDefault: boolean;
+  stages: PipelineStagePayload[];
+}
+
+export interface DealPayload {
+  id: string;
+  organizationId: string;
+  pipelineId: string;
+  stageId: string;
+  contactId?: string;
+  companyId?: string;
+  assignedToId?: string;
+  title: string;
+  amount: number;
+  currency: string;
+  status: DealStatus;
+  winLossReason?: string;
+  expectedCloseDate?: string;
+  contact?: ContactPayload;
+  company?: CompanyPayload;
+  assignedTo?: UserProfile;
+  stage?: PipelineStagePayload;
+  createdAt: string;
+}
+
+export interface ActivityPayload {
+  id: string;
+  organizationId: string;
+  userId: string;
+  contactId?: string;
+  dealId?: string;
+  type: ActivityType;
+  title: string;
+  notes?: string;
+  dueAt?: string;
+  completedAt?: string;
+  user: UserProfile;
+  createdAt: string;
 }

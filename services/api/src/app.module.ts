@@ -4,6 +4,7 @@ import { OrganizationsModule } from './modules/organizations/organizations.modul
 import { RealtimeModule } from './modules/realtime/realtime.module';
 import { ConversationsModule } from './modules/conversations/conversations.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { CrmModule } from './modules/crm/crm.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     RealtimeModule,
     ConversationsModule,
     NotificationsModule,
+    CrmModule,
   ],
 })
 export class AppModule {}

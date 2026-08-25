@@ -86,6 +86,37 @@ export enum MessageReceiptStatus {
   READ = 'READ',
 }
 
+export enum LeadStatus {
+  NEW = 'NEW',
+  CONTACTED = 'CONTACTED',
+  QUALIFIED = 'QUALIFIED',
+  UNQUALIFIED = 'UNQUALIFIED',
+  CONVERTED = 'CONVERTED',
+}
+
+export enum LeadSource {
+  WEBSITE = 'WEBSITE',
+  REFERRAL = 'REFERRAL',
+  CHAT = 'CHAT',
+  COLD_OUTREACH = 'COLD_OUTREACH',
+  SOCIAL = 'SOCIAL',
+  OTHER = 'OTHER',
+}
+
+export enum DealStatus {
+  OPEN = 'OPEN',
+  WON = 'WON',
+  LOST = 'LOST',
+}
+
+export enum ActivityType {
+  CALL = 'CALL',
+  MEETING = 'MEETING',
+  EMAIL = 'EMAIL',
+  NOTE = 'NOTE',
+  TASK = 'TASK',
+}
+
 export enum AuditAction {
   USER_REGISTERED = 'USER_REGISTERED',
   USER_LOGGED_IN = 'USER_LOGGED_IN',
@@ -101,4 +132,9 @@ export enum AuditAction {
   TEAM_UPDATED = 'TEAM_UPDATED',
   CONVERSATION_CREATED = 'CONVERSATION_CREATED',
   MESSAGE_SENT = 'MESSAGE_SENT',
+  CONTACT_CREATED = 'CONTACT_CREATED',
+  LEAD_CREATED = 'LEAD_CREATED',
+  LEAD_CONVERTED = 'LEAD_CONVERTED',
+  DEAL_CREATED = 'DEAL_CREATED',
+  DEAL_STAGE_UPDATED = 'DEAL_STAGE_UPDATED',
 }

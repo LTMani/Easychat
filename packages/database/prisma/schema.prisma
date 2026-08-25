@@ -53,6 +53,37 @@ enum MessageReceiptStatus {
   READ
 }
 
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  UNQUALIFIED
+  CONVERTED
+}
+
+enum LeadSource {
+  WEBSITE
+  REFERRAL
+  CHAT
+  COLD_OUTREACH
+  SOCIAL
+  OTHER
+}
+
+enum DealStatus {
+  OPEN
+  WON
+  LOST
+}
+
+enum ActivityType {
+  CALL
+  MEETING
+  EMAIL
+  NOTE
+  TASK
+}
+
 model User {
   id               String               @id @default(uuid())
   email            String               @unique
@@ -78,6 +109,10 @@ model User {
   notifications         Notification[]
   presence              UserPresence?
 
+  assignedLeads         Lead[]                   @relation("AssignedLeads")
+  assignedDeals         Deal[]                   @relation("AssignedDeals")
+  activities            Activity[]               @relation("UserActivities")
+
   @@map("users")
 }
 
@@ -94,6 +129,13 @@ model Organization {
   conversations Conversation[]
   notifications Notification[]
   auditLogs     AuditLog[]
+
+  companies     Company[]
+  contacts      Contact[]
+  leads         Lead[]
+  pipelines     Pipeline[]
+  deals         Deal[]
+  activities    Activity[]
 
   @@map("organizations")
 }
@@ -284,6 +326,147 @@ model UserPresence {
   user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_presence")
+}
+
+model Company {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  domain         String?
+  industry       String?
+  employeeCount  Int?
+  annualRevenue  Float?
+  website        String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contacts       Contact[]
+  deals          Deal[]
+  leads          Lead[]
+
+  @@map("companies")
+}
+
+model Contact {
+  id             String       @id @default(uuid())
+  organizationId String
+  companyId      String?
+  firstName      String
+  lastName       String
+  email          String
+  phone          String?
+  jobTitle       String?
+  tags           String[]     @default([])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  deals          Deal[]
+  activities     Activity[]
+
+  @@map("contacts")
+}
+
+model Lead {
+  id             String       @id @default(uuid())
+  organizationId String
+  companyId      String?
+  title          String
+  contactName    String
+  email          String
+  phone          String?
+  source         LeadSource   @default(WEBSITE)
+  status         LeadStatus   @default(NEW)
+  score          Int          @default(0)
+  assignedToId   String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  company        Company?     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  assignedTo     User?        @relation("AssignedLeads", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  @@map("leads")
+}
+
+model Pipeline {
+  id             String          @id @default(uuid())
+  organizationId String
+  name           String
+  isDefault      Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  stages         PipelineStage[]
+  deals          Deal[]
+
+  @@map("pipelines")
+}
+
+model PipelineStage {
+  id          String   @id @default(uuid())
+  pipelineId  String
+  name        String
+  position    Int
+  probability Int      @default(50)
+  color       String?  @default("#0284c7")
+
+  pipeline    Pipeline @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  deals       Deal[]
+
+  @@map("pipeline_stages")
+}
+
+model Deal {
+  id                String        @id @default(uuid())
+  organizationId    String
+  pipelineId        String
+  stageId           String
+  contactId         String?
+  companyId         String?
+  assignedToId      String?
+  title             String
+  amount            Float
+  currency          String        @default("USD")
+  status            DealStatus    @default(OPEN)
+  winLossReason     String?
+  expectedCloseDate DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  organization      Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  pipeline          Pipeline      @relation(fields: [pipelineId], references: [id], onDelete: Cascade)
+  stage             PipelineStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  contact           Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  company           Company?      @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  assignedTo        User?         @relation("AssignedDeals", fields: [assignedToId], references: [id], onDelete: SetNull)
+  activities        Activity[]
+
+  @@map("deals")
+}
+
+model Activity {
+  id             String       @id @default(uuid())
+  organizationId String
+  userId         String
+  contactId      String?
+  dealId         String?
+  type           ActivityType @default(NOTE)
+  title          String
+  notes          String?
+  dueAt          DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation("UserActivities", fields: [userId], references: [id], onDelete: Cascade)
+  contact        Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  deal           Deal?        @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  @@map("activities")
 }
 
 model AuditLog {
