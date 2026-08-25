@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SystemRole } from './enums';
+import { SystemRole, ConversationType, MessageType, PresenceStatus } from './enums';
 
 export const RegisterSchema = z.object({
   email: z.string().email({ message: 'Invalid email address format' }),
@@ -40,3 +40,31 @@ export const UpdateRoleSchema = z.object({
   role: z.nativeEnum(SystemRole),
 });
 export type UpdateRoleDto = z.infer<typeof UpdateRoleSchema>;
+
+export const CreateConversationSchema = z.object({
+  type: z.nativeEnum(ConversationType),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  participantUserIds: z.array(z.string().uuid()).min(1, { message: 'At least one participant is required' }),
+});
+export type CreateConversationDto = z.infer<typeof CreateConversationSchema>;
+
+export const SendMessageSchema = z.object({
+  conversationId: z.string().uuid(),
+  content: z.string().min(1, { message: 'Message content cannot be empty' }),
+  type: z.nativeEnum(MessageType).optional().default(MessageType.TEXT),
+  replyToId: z.string().uuid().optional(),
+  attachments: z.array(z.object({
+    fileName: z.string(),
+    fileUrl: z.string(),
+    fileSize: z.number(),
+    mimeType: z.string(),
+  })).optional(),
+});
+export type SendMessageDto = z.infer<typeof SendMessageSchema>;
+
+export const UpdatePresenceSchema = z.object({
+  status: z.nativeEnum(PresenceStatus),
+  customStatus: z.string().optional(),
+});
+export type UpdatePresenceDto = z.infer<typeof UpdatePresenceSchema>;

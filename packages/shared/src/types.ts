@@ -1,4 +1,4 @@
-import { SystemRole, Permission, MemberStatus } from './enums';
+import { SystemRole, Permission, MemberStatus, ConversationType, MessageType, NotificationType, PresenceStatus } from './enums';
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -59,4 +59,63 @@ export interface OrganizationMemberInfo {
   status: MemberStatus;
   user: UserProfile;
   createdAt: string;
+}
+
+export interface ConversationPayload {
+  id: string;
+  organizationId: string;
+  type: ConversationType;
+  title?: string;
+  description?: string;
+  createdById: string;
+  lastMessageAt: string;
+  createdAt: string;
+  participants: {
+    id: string;
+    userId: string;
+    role: string;
+    user: UserProfile;
+  }[];
+  lastMessage?: MessagePayload;
+  unreadCount?: number;
+}
+
+export interface MessageAttachmentPayload {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+}
+
+export interface MessagePayload {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  type: MessageType;
+  replyToId?: string;
+  isEdited: boolean;
+  createdAt: string;
+  sender: UserProfile;
+  attachments?: MessageAttachmentPayload[];
+}
+
+export interface NotificationPayload {
+  id: string;
+  organizationId: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  link?: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface PresencePayload {
+  userId: string;
+  status: PresenceStatus;
+  customStatus?: string;
+  lastActiveAt: string;
 }

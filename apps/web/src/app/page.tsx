@@ -23,7 +23,7 @@ export default function HomePage() {
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-16 flex flex-col items-center justify-center text-center">
         <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 rounded-full mb-6">
-          Phase 1 — Foundation Architecture
+          Phase 2 — EasyChat Core Realtime Engine
         </span>
         <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-4xl">
           Conversation ® Context ® Action
@@ -33,8 +33,8 @@ export default function HomePage() {
         </p>
 
         <div className="mt-10 flex flex-wrap gap-4 justify-center">
-          <Link href="/register" className="px-6 py-3 text-base font-semibold text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700">
-            Register Organization
+          <Link href="/conversations" className="px-6 py-3 text-base font-semibold text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700">
+            Open Chat Workspace
           </Link>
           <Link href="/settings/organization" className="px-6 py-3 text-base font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50">
             Organization & Team Dashboard
@@ -43,21 +43,21 @@ export default function HomePage() {
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 text-left w-full">
           <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="font-semibold text-lg text-slate-900">Identity & RBAC</h3>
+            <h3 className="font-semibold text-lg text-slate-900">Realtime Engine</h3>
             <p className="mt-2 text-sm text-slate-600">
-              Multi-tenant architecture, JWT sessions, refresh tokens, and fine-grained roles (Owner, Admin, Manager, Sales Rep, Support Agent).
+              WebSockets & Socket.IO powering instant 1-on-1 and group messaging, typing indicators, presence, and unread notification alerts.
             </p>
           </div>
           <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="font-semibold text-lg text-slate-900">Organizations & Teams</h3>
+            <h3 className="font-semibold text-lg text-slate-900">Conversation First</h3>
             <p className="mt-2 text-sm text-slate-600">
-              Multi-organization support, team isolation, member invitations, and automated permission validation.
+              Every customer conversation provides CRM context and serves as the starting point for triggering business workflows.
             </p>
           </div>
           <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="font-semibold text-lg text-slate-900">Modular Monolith</h3>
+            <h3 className="font-semibold text-lg text-slate-900">In-App Notifications</h3>
             <p className="mt-2 text-sm text-slate-600">
-              Clean architecture with extracted domain modules, ready for service extraction as scale demands.
+              Live notification bell badge, mention alerts, and action triggers keeping team members synchronized across channels.
             </p>
           </div>
         </div>

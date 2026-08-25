@@ -55,6 +55,37 @@ export enum MemberStatus {
   SUSPENDED = 'SUSPENDED',
 }
 
+export enum ConversationType {
+  DIRECT = 'DIRECT',
+  GROUP = 'GROUP',
+  CUSTOMER_SUPPORT = 'CUSTOMER_SUPPORT',
+}
+
+export enum MessageType {
+  TEXT = 'TEXT',
+  IMAGE = 'IMAGE',
+  FILE = 'FILE',
+  SYSTEM = 'SYSTEM',
+}
+
+export enum NotificationType {
+  MENTION = 'MENTION',
+  NEW_MESSAGE = 'NEW_MESSAGE',
+  ASSIGNMENT = 'ASSIGNMENT',
+  SYSTEM = 'SYSTEM',
+}
+
+export enum PresenceStatus {
+  ONLINE = 'ONLINE',
+  OFFLINE = 'OFFLINE',
+  AWAY = 'AWAY',
+}
+
+export enum MessageReceiptStatus {
+  DELIVERED = 'DELIVERED',
+  READ = 'READ',
+}
+
 export enum AuditAction {
   USER_REGISTERED = 'USER_REGISTERED',
   USER_LOGGED_IN = 'USER_LOGGED_IN',
@@ -68,4 +99,6 @@ export enum AuditAction {
   MEMBER_REMOVED = 'MEMBER_REMOVED',
   TEAM_CREATED = 'TEAM_CREATED',
   TEAM_UPDATED = 'TEAM_UPDATED',
+  CONVERSATION_CREATED = 'CONVERSATION_CREATED',
+  MESSAGE_SENT = 'MESSAGE_SENT',
 }
