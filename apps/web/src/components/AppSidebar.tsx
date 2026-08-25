@@ -28,6 +28,7 @@ import {
   Send,
   Package,
   UserCheck,
+  DollarSign,
 } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 
@@ -54,6 +55,7 @@ const navigationItems = [
   { name: 'Custom Fields', href: '/custom-fields', icon: Sliders, category: 'Platform' },
   { name: 'Bulk Data ETL', href: '/etl', icon: Upload, category: 'Platform' },
   { name: 'Integrations Hub', href: '/integrations', icon: Share2, category: 'Platform' },
+  { name: 'Executive Profits', href: '/analytics/profits', icon: DollarSign, category: 'Enterprise' },
   { name: 'Billing & Subscriptions', href: '/billing', icon: TrendingUp, category: 'Enterprise' },
   { name: 'Audit Logs', href: '/audit', icon: ShieldCheck, category: 'Enterprise' },
   { name: 'Organization', href: '/settings/organization', icon: Settings, category: 'Enterprise' },
