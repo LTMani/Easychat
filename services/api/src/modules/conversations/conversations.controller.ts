@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ConversationsService } from './conversations.service';
+import { ConversationIntentService } from './conversation-intent.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RbacGuard } from '../../common/guards/rbac.guard';
 import { RequirePermissions } from '../../common/decorators/permissions.decorator';
@@ -12,7 +13,10 @@ import { Permission, CreateConversationDto, SendMessageDto, UserSessionPayload }
 @UseGuards(JwtAuthGuard, RbacGuard)
 @Controller('conversations')
 export class ConversationsController {
-  constructor(private readonly conversationsService: ConversationsService) {}
+  constructor(
+    private readonly conversationsService: ConversationsService,
+    private readonly intentService: ConversationIntentService,
+  ) {}
 
   @Get()
   @RequirePermissions(Permission.CONVERSATION_READ)
@@ -40,5 +44,12 @@ export class ConversationsController {
   @ApiOperation({ summary: 'Send message in conversation' })
   async sendMessage(@CurrentUser() user: UserSessionPayload, @Body() dto: SendMessageDto) {
     return this.conversationsService.sendMessage(user.organizationId, user.userId, dto);
+  }
+
+  @Post('analyze-intent')
+  @RequirePermissions(Permission.CONVERSATION_READ)
+  @ApiOperation({ summary: 'Conversation-First CRM Intent Detection & Suggested Actions' })
+  async analyzeIntent(@Body() body: { text: string; contactId?: string }) {
+    return this.intentService.analyzeMessageIntent(body.text, body.contactId);
   }
 }
