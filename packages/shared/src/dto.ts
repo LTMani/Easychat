@@ -9,6 +9,8 @@ import {
   DealStatus,
   ActivityType,
   TaskStatus,
+  TicketPriority,
+  TicketStatus,
 } from './enums';
 
 export const RegisterSchema = z.object({
@@ -167,3 +169,32 @@ export const LinkConversationCrmSchema = z.object({
   dealId: z.string().uuid().optional(),
 });
 export type LinkConversationCrmDto = z.infer<typeof LinkConversationCrmSchema>;
+
+export const CreateTicketSchema = z.object({
+  subject: z.string().min(1, { message: 'Ticket subject is required' }),
+  description: z.string().min(1, { message: 'Ticket description is required' }),
+  priority: z.nativeEnum(TicketPriority).optional().default(TicketPriority.MEDIUM),
+  contactId: z.string().uuid().optional(),
+  conversationId: z.string().uuid().optional(),
+  assignedToId: z.string().uuid().optional(),
+});
+export type CreateTicketDto = z.infer<typeof CreateTicketSchema>;
+
+export const UpdateTicketStatusSchema = z.object({
+  status: z.nativeEnum(TicketStatus),
+});
+export type UpdateTicketStatusDto = z.infer<typeof UpdateTicketStatusSchema>;
+
+export const AddTicketCommentSchema = z.object({
+  ticketId: z.string().uuid(),
+  content: z.string().min(1, { message: 'Comment content is required' }),
+  isInternal: z.boolean().optional().default(false),
+});
+export type AddTicketCommentDto = z.infer<typeof AddTicketCommentSchema>;
+
+export const CreateKnowledgeArticleSchema = z.object({
+  title: z.string().min(1, { message: 'Article title is required' }),
+  category: z.string().min(1, { message: 'Category is required' }),
+  content: z.string().min(1, { message: 'Content is required' }),
+});
+export type CreateKnowledgeArticleDto = z.infer<typeof CreateKnowledgeArticleSchema>;

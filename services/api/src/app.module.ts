@@ -6,6 +6,7 @@ import { ConversationsModule } from './modules/conversations/conversations.modul
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { CrmModule } from './modules/crm/crm.module';
 import { Customer360Module } from './modules/customer360/customer360.module';
+import { SupportModule } from './modules/support/support.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { Customer360Module } from './modules/customer360/customer360.module';
     NotificationsModule,
     CrmModule,
     Customer360Module,
+    SupportModule,
   ],
 })
 export class AppModule {}

@@ -91,6 +91,20 @@ enum TaskStatus {
   CANCELLED
 }
 
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
 model User {
   id               String               @id @default(uuid())
   email            String               @unique
@@ -120,6 +134,9 @@ model User {
   assignedDeals         Deal[]                   @relation("AssignedDeals")
   assignedTasks         Task[]                   @relation("AssignedTasks")
   uploadedDocuments     CustomerDocument[]       @relation("UploadedDocuments")
+  assignedTickets       Ticket[]                 @relation("AssignedTickets")
+  ticketComments        TicketComment[]          @relation("UserTicketComments")
+  authoredArticles      KnowledgeArticle[]       @relation("AuthoredArticles")
   activities            Activity[]               @relation("UserActivities")
 
   @@map("users")
@@ -147,6 +164,8 @@ model Organization {
   activities    Activity[]
   tasks         Task[]
   documents     CustomerDocument[]
+  tickets       Ticket[]
+  articles      KnowledgeArticle[]
 
   @@map("organizations")
 }
@@ -242,6 +261,7 @@ model Conversation {
   deal           Deal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
   participants   ConversationParticipant[]
   messages       Message[]
+  tickets        Ticket[]
 
   @@map("conversations")
 }
@@ -384,6 +404,7 @@ model Contact {
   activities     Activity[]
   tasks          Task[]
   documents      CustomerDocument[]
+  tickets        Ticket[]
 
   @@map("contacts")
 }
@@ -530,6 +551,65 @@ model CustomerDocument {
   uploadedBy     User         @relation("UploadedDocuments", fields: [uploadedById], references: [id], onDelete: Cascade)
 
   @@map("customer_documents")
+}
+
+model Ticket {
+  id                 String         @id @default(uuid())
+  organizationId     String
+  contactId          String?
+  conversationId     String?
+  assignedToId       String?
+  ticketNumber       String         @unique
+  subject            String
+  description        String
+  priority           TicketPriority @default(MEDIUM)
+  status             TicketStatus   @default(OPEN)
+  firstResponseDueAt DateTime?
+  resolutionDueAt   DateTime?
+  resolvedAt         DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  organization       Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  contact            Contact?       @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  conversation       Conversation?  @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  assignedTo         User?          @relation("AssignedTickets", fields: [assignedToId], references: [id], onDelete: SetNull)
+  comments           TicketComment[]
+
+  @@map("tickets")
+}
+
+model TicketComment {
+  id         String   @id @default(uuid())
+  ticketId   String
+  userId     String
+  isInternal Boolean  @default(false)
+  content    String
+  createdAt  DateTime @default(now())
+
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user       User     @relation("UserTicketComments", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ticket_comments")
+}
+
+model KnowledgeArticle {
+  id             String       @id @default(uuid())
+  organizationId String
+  authorId       String
+  title          String
+  slug           String       @unique
+  category       String
+  content        String
+  isPublished    Boolean      @default(true)
+  viewCount      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  author         User         @relation("AuthoredArticles", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("knowledge_articles")
 }
 
 model AuditLog {

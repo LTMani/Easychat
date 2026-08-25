@@ -124,6 +124,20 @@ export enum TaskStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum TicketPriority {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  URGENT = 'URGENT',
+}
+
+export enum TicketStatus {
+  OPEN = 'OPEN',
+  IN_PROGRESS = 'IN_PROGRESS',
+  RESOLVED = 'RESOLVED',
+  CLOSED = 'CLOSED',
+}
+
 export enum AuditAction {
   USER_REGISTERED = 'USER_REGISTERED',
   USER_LOGGED_IN = 'USER_LOGGED_IN',
@@ -147,4 +161,7 @@ export enum AuditAction {
   TASK_CREATED = 'TASK_CREATED',
   TASK_COMPLETED = 'TASK_COMPLETED',
   DOCUMENT_UPLOADED = 'DOCUMENT_UPLOADED',
+  TICKET_CREATED = 'TICKET_CREATED',
+  TICKET_RESOLVED = 'TICKET_RESOLVED',
+  ARTICLE_PUBLISHED = 'ARTICLE_PUBLISHED',
 }

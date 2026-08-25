@@ -23,7 +23,7 @@ export default function HomePage() {
 
       <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-16 flex flex-col items-center justify-center text-center">
         <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 rounded-full mb-6">
-          Phase 3 — CRM (Contacts, Leads, Deals & Pipelines)
+          Phase 5 — Customer Support & SLA Engine
         </span>
         <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-900 tracking-tight max-w-4xl">
           Conversation ® Context ® Action
@@ -36,34 +36,34 @@ export default function HomePage() {
           <Link href="/conversations" className="px-6 py-3 text-base font-semibold text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700">
             Realtime Chat
           </Link>
+          <Link href="/tickets" className="px-6 py-3 text-base font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50">
+            Support Desk Queue
+          </Link>
           <Link href="/deals" className="px-6 py-3 text-base font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50">
-            Kanban Deals Board
+            Deals Board
           </Link>
-          <Link href="/leads" className="px-6 py-3 text-base font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50">
-            Leads Management
-          </Link>
-          <Link href="/contacts" className="px-6 py-3 text-base font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50">
-            Contacts Directory
+          <Link href="/knowledge-base" className="px-6 py-3 text-base font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg shadow-sm hover:bg-slate-50">
+            Knowledge Base
           </Link>
         </div>
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 text-left w-full">
           <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="font-semibold text-lg text-slate-900">Interactive Kanban</h3>
+            <h3 className="font-semibold text-lg text-slate-900">SLA Engine</h3>
             <p className="mt-2 text-sm text-slate-600">
-              Pipeline stage tracking, stage movement actions, win/loss reasons, and real-time revenue calculations.
+              Automated response targets (15-min SLA for URGENT tickets), first response timers, and breach alerts.
             </p>
           </div>
           <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="font-semibold text-lg text-slate-900">Lead Conversion</h3>
+            <h3 className="font-semibold text-lg text-slate-900">Internal Agent Notes</h3>
             <p className="mt-2 text-sm text-slate-600">
-              One-click workflow to convert qualified inquiries into Contacts and active Deals.
+              Private internal notes for support team collaboration alongside customer-facing ticket replies.
             </p>
           </div>
           <div className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="font-semibold text-lg text-slate-900">Customer 360 Foundation</h3>
+            <h3 className="font-semibold text-lg text-slate-900">Knowledge Base</h3>
             <p className="mt-2 text-sm text-slate-600">
-              Unified database linking customer contacts, companies, lead sources, and active sales pipelines.
+              Categorized support documentation and solution guides for self-service and agent resolution links.
             </p>
           </div>
         </div>

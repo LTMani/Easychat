@@ -11,6 +11,8 @@ import {
   DealStatus,
   ActivityType,
   TaskStatus,
+  TicketPriority,
+  TicketStatus,
 } from './enums';
 
 export interface ApiResponse<T = any> {
@@ -272,4 +274,49 @@ export interface Customer360TimelineItem {
   timestamp: string;
   actor?: UserProfile;
   metadata?: any;
+}
+
+export interface TicketCommentPayload {
+  id: string;
+  ticketId: string;
+  userId: string;
+  isInternal: boolean;
+  content: string;
+  user: UserProfile;
+  createdAt: string;
+}
+
+export interface TicketPayload {
+  id: string;
+  organizationId: string;
+  contactId?: string;
+  conversationId?: string;
+  assignedToId?: string;
+  ticketNumber: string;
+  subject: string;
+  description: string;
+  priority: TicketPriority;
+  status: TicketStatus;
+  firstResponseDueAt?: string;
+  resolutionDueAt?: string;
+  resolvedAt?: string;
+  isSlaBreached?: boolean;
+  contact?: ContactPayload;
+  assignedTo?: UserProfile;
+  comments?: TicketCommentPayload[];
+  createdAt: string;
+}
+
+export interface KnowledgeArticlePayload {
+  id: string;
+  organizationId: string;
+  authorId: string;
+  title: string;
+  slug: string;
+  category: string;
+  content: string;
+  isPublished: boolean;
+  viewCount: number;
+  author: UserProfile;
+  createdAt: string;
 }
