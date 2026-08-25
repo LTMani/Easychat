@@ -12,7 +12,8 @@ async function main() {
   let adminUser = await prisma.user.findUnique({ where: { email: adminEmail } });
 
   if (!adminUser) {
-    const passwordHash = await hashPassword('AdminPass123!');
+    const adminPassword = process.env.SEED_ADMIN_PASSWORD || process.env.DEFAULT_SEED_PASSWORD || 'ChangeMeOnFirstLogin!';
+    const passwordHash = await hashPassword(adminPassword);
     adminUser = await prisma.user.create({
       data: {
         email: adminEmail,
@@ -69,7 +70,8 @@ async function main() {
   for (const m of teamMembersData) {
     let u = await prisma.user.findUnique({ where: { email: m.email } });
     if (!u) {
-      const passwordHash = await hashPassword('UserPass123!');
+      const userPassword = process.env.SEED_USER_PASSWORD || process.env.DEFAULT_SEED_PASSWORD || 'ChangeMeOnFirstLogin!';
+      const passwordHash = await hashPassword(userPassword);
       u = await prisma.user.create({
         data: {
           email: m.email,

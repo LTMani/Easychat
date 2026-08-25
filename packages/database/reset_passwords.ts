@@ -5,16 +5,21 @@ import { hashPassword } from '@easychat/auth';
 const prisma = new PrismaClient();
 
 async function main() {
-  const newHash = await hashPassword('AdminPass123!');
-  
-  // Update all users' passwords to AdminPass123! for convenience during testing
+  const targetPassword = process.env.NEW_PASSWORD || process.env.DEFAULT_SEED_PASSWORD;
+  if (!targetPassword) {
+    console.error('Error: Please provide NEW_PASSWORD environment variable.');
+    process.exit(1);
+  }
+
+  const newHash = await hashPassword(targetPassword);
+
   const result = await prisma.user.updateMany({
     data: {
       passwordHash: newHash,
     },
   });
 
-  console.log(`Successfully reset password to "AdminPass123!" for ${result.count} accounts.`);
+  console.log(`Successfully updated passwords for ${result.count} accounts.`);
 }
 
 main().finally(() => prisma.$disconnect());

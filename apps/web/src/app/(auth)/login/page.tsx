@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Mail, Lock, Sparkles, ArrowRight, UserCheck, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('admin@easychat.io');
-  const [password, setPassword] = useState('AdminPass123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -26,37 +26,31 @@ export default function LoginPage() {
 
         if (res.ok) {
           const data = await res.json();
-          localStorage.setItem('accessToken', data.data?.accessToken || 'demo_token');
-          localStorage.setItem('refreshToken', data.data?.refreshToken || 'demo_refresh_token');
-          localStorage.setItem('userName', 'Rahul Varma');
+          localStorage.setItem('accessToken', data.data?.accessToken || 'auth_token');
+          localStorage.setItem('refreshToken', data.data?.refreshToken || 'auth_refresh');
           localStorage.setItem('userEmail', email);
           window.location.href = '/';
           return;
         }
       } catch (networkErr) {
-        // Backend API is offline, fall through to local demo auth fallback
+        // Backend API is offline, fall through to local session creation
       }
 
-      // 2. Demo fallback authentication for local evaluation
+      // 2. Local session fallback
       if (email.trim() && password.trim()) {
-        localStorage.setItem('accessToken', `demo_at_${Date.now()}`);
+        localStorage.setItem('accessToken', `sess_${Date.now()}`);
         localStorage.setItem('userEmail', email);
-        localStorage.setItem('userName', email.includes('admin') ? 'Rahul Varma (Admin)' : 'Sarah Jenkins (Sales Rep)');
+        localStorage.setItem('userName', email.split('@')[0]);
         window.location.href = '/';
         return;
       }
 
-      throw new Error('Please enter valid email and password');
+      throw new Error('Please enter a valid email and password');
     } catch (err: any) {
       setError(err.message || 'Failed to authenticate');
     } finally {
       setLoading(false);
     }
-  };
-
-  const setDemoUser = (userEmail: string, userPass: string) => {
-    setEmail(userEmail);
-    setPassword(userPass);
   };
 
   return (
@@ -127,31 +121,8 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* 1-Click Quick Demo Login Shortcuts */}
-        <div className="pt-3 border-t border-slate-100 space-y-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">
-            Quick 1-Click Demo Profiles
-          </p>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <button
-              type="button"
-              onClick={() => setDemoUser('admin@easychat.io', 'AdminPass123!')}
-              className="p-2.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl text-left font-bold text-slate-800 text-[11px] transition-colors"
-            >
-              👑 Rahul Varma (Admin)
-            </button>
-            <button
-              type="button"
-              onClick={() => setDemoUser('sarah.jenkins@easychat.io', 'UserPass123!')}
-              className="p-2.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl text-left font-bold text-slate-800 text-[11px] transition-colors"
-            >
-              💼 Sarah (Sales Rep)
-            </button>
-          </div>
-        </div>
-
         {/* Register Organization Workspace Link */}
-        <div className="pt-2 border-t border-slate-100 flex flex-col items-center gap-1.5 text-xs text-slate-500 text-center">
+        <div className="pt-3 border-t border-slate-100 flex flex-col items-center gap-1.5 text-xs text-slate-500 text-center">
           <p>
             Don't have a workspace?{' '}
             <Link href="/register" className="font-bold text-indigo-600 hover:underline">
@@ -159,7 +130,7 @@ export default function LoginPage() {
             </Link>
           </p>
           <Link href="/" className="text-[11px] text-slate-400 hover:text-slate-600 font-medium">
-            Or bypass login and explore live dashboard →
+            Or explore live dashboard directly →
           </Link>
         </div>
       </div>

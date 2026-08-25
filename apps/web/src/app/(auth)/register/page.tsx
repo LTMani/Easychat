@@ -2,15 +2,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Building2, User, Mail, Lock, Sparkles, CheckCircle2, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Building2, User, Mail, Lock, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    fullName: 'Rahul Varma',
-    email: 'rahul.varma@acme.com',
-    organizationName: 'Acme Global Technologies',
-    workspaceSlug: 'acme-global',
-    password: 'Password123!',
+    fullName: '',
+    email: '',
+    organizationName: '',
+    workspaceSlug: '',
+    password: '',
     teamSize: '20-50',
   });
   const [error, setError] = useState('');
@@ -56,9 +56,9 @@ export default function RegisterPage() {
       // 2. Demo fallback registration
       if (formData.email && formData.password) {
         localStorage.setItem('accessToken', `demo_reg_${Date.now()}`);
-        localStorage.setItem('userName', formData.fullName);
+        localStorage.setItem('userName', formData.fullName || formData.email.split('@')[0]);
         localStorage.setItem('userEmail', formData.email);
-        localStorage.setItem('orgName', formData.organizationName);
+        localStorage.setItem('orgName', formData.organizationName || 'My Organization');
         window.location.href = '/';
         return;
       }
@@ -69,17 +69,6 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAutoFill = () => {
-    setFormData({
-      fullName: 'Rahul Varma',
-      email: 'rahul.varma@acmecorp.com',
-      organizationName: 'Acme Enterprise Solutions',
-      workspaceSlug: 'acme-corp',
-      password: 'EnterpriseSecure2026!',
-      teamSize: '50-200',
-    });
   };
 
   return (
@@ -114,7 +103,7 @@ export default function RegisterPage() {
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                  placeholder="Rahul Varma"
+                  placeholder="Enter full name"
                 />
               </div>
             </div>
@@ -131,7 +120,7 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                  placeholder="rahul@acme.com"
+                  placeholder="name@company.com"
                 />
               </div>
             </div>
@@ -149,7 +138,7 @@ export default function RegisterPage() {
                 value={formData.organizationName}
                 onChange={(e) => setFormData({ ...formData, organizationName: e.target.value, workspaceSlug: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '-') })}
                 className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                placeholder="Acme Global Corporation"
+                placeholder="Your Organization"
               />
             </div>
           </div>
@@ -160,7 +149,7 @@ export default function RegisterPage() {
                 Workspace Domain
               </label>
               <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-mono text-slate-600">
-                <span className="text-indigo-600 font-bold truncate max-w-[90px]">{formData.workspaceSlug || 'acme'}</span>
+                <span className="text-indigo-600 font-bold truncate max-w-[90px]">{formData.workspaceSlug || 'workspace'}</span>
                 <span className="text-slate-400 text-[11px]">.easychat.io</span>
               </div>
             </div>
@@ -195,7 +184,7 @@ export default function RegisterPage() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-                placeholder="••••••••••••"
+                placeholder="Choose a strong password"
               />
             </div>
             <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
@@ -213,22 +202,11 @@ export default function RegisterPage() {
           </button>
         </form>
 
-        {/* 1-Click Quick Auto-Fill Demo */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-          <button
-            type="button"
-            onClick={handleAutoFill}
-            className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1 bg-indigo-50 px-2.5 py-1 rounded-lg"
-          >
-            <Sparkles className="w-3.5 h-3.5" /> Auto-fill Sample Data
-          </button>
-
-          <div className="text-slate-500 text-xs">
-            Already have an account?{' '}
-            <Link href="/login" className="font-bold text-indigo-600 hover:underline">
-              Sign In →
-            </Link>
-          </div>
+        <div className="pt-3 border-t border-slate-100 flex items-center justify-center text-xs text-slate-500">
+          Already have an account?{' '}
+          <Link href="/login" className="font-bold text-indigo-600 hover:underline ml-1">
+            Sign In →
+          </Link>
         </div>
       </div>
     </div>
