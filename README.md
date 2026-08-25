@@ -4,7 +4,7 @@ EasyChat CRM is a conversation-first Customer Relationship Management and enterp
 
 ---
 
-## 🏗️ Architecture & Monorepo Structure
+## Architecture & Monorepo Structure
 
 The repository is organized as an enterprise TypeScript monorepo using npm workspaces:
 
@@ -24,16 +24,17 @@ The repository is organized as an enterprise TypeScript monorepo using npm works
 
 ---
 
-## 📋 Prerequisites & Dependencies
+## Dependencies
 
 - **Node.js**: v18.17.0 or higher (v20+ recommended)
 - **npm**: v9.0.0 or higher
 - **PostgreSQL** or **SQLite** (bundled local fallback supported)
 - **Redis** (optional, for BullMQ worker queue processing)
+- **Docker** & **Docker Compose** (for containerized deployment)
 
 ---
 
-## 🚀 Installation & Setup
+## Installation
 
 1. **Clone the repository**:
    ```bash
@@ -47,7 +48,6 @@ The repository is organized as an enterprise TypeScript monorepo using npm works
    ```
 
 3. **Configure Environment Variables**:
-   Copy the example configuration to your local environment:
    ```bash
    cp example.env .env
    ```
@@ -61,7 +61,7 @@ The repository is organized as an enterprise TypeScript monorepo using npm works
 
 ---
 
-## 🔨 Build Instructions
+## Build
 
 To build all applications, microservices, and shared packages in the monorepo:
 
@@ -69,16 +69,26 @@ To build all applications, microservices, and shared packages in the monorepo:
 npm run build
 ```
 
+Or using Docker:
+```bash
+docker build -t easychat-platform:latest .
+```
+
 ---
 
-## 💻 Running the Application Locally
+## Run
 
 ### Option A: Run Full Monorepo Simultaneously
 ```bash
 npm run dev
 ```
 
-### Option B: Run Services Individually
+### Option B: Run via Docker Compose
+```bash
+docker-compose up -d
+```
+
+### Option C: Run Services Individually
 
 - **Web Frontend Dashboard (Next.js - Port 3000)**:
   ```bash
@@ -92,11 +102,25 @@ npm run dev
   ```
   Accessible at: `http://localhost:4000`
 
+- **Background Worker**:
+  ```bash
+  npm run dev:worker
+  ```
+
 ---
 
-## 🧪 Testing & Quality Assurance
+## Usage
 
-Run the automated Jest unit test suites across all workspaces:
+1. Open your browser and navigate to `http://localhost:3000`.
+2. Sign in or register a new workspace at `http://localhost:3000/register`.
+3. Explore the omnichannel live chat, AI chatbot builder, sales pipeline, VoIP softphone, and enterprise compliance vault.
+4. Interact with the REST API at `http://localhost:4000/v1` or use the TypeScript SDK in `packages/sdk`.
+
+---
+
+## Testing
+
+Run the automated Jest test suites across all workspaces:
 
 ```bash
 npm test
@@ -109,7 +133,7 @@ npm run test --workspace=services/api
 
 ---
 
-## 🔐 Security & License
+## License
 
 This software and associated documentation files are proprietary and confidential. Unauthorized copying, distribution, or modification is strictly prohibited.
 
