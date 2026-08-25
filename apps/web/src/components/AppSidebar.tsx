@@ -32,6 +32,8 @@ import {
   Plus,
 } from 'lucide-react';
 
+import { GlobalFloatingAiBot } from './GlobalFloatingAiBot';
+
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
@@ -339,6 +341,9 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Global Interactive AI Support Chatbot Widget */}
+      <GlobalFloatingAiBot />
     </div>
   );
 }
