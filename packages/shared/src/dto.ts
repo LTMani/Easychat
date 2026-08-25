@@ -8,6 +8,7 @@ import {
   LeadSource,
   DealStatus,
   ActivityType,
+  TaskStatus,
 } from './enums';
 
 export const RegisterSchema = z.object({
@@ -134,3 +135,35 @@ export const CreateActivitySchema = z.object({
   dueAt: z.string().optional(),
 });
 export type CreateActivityDto = z.infer<typeof CreateActivitySchema>;
+
+export const CreateTaskSchema = z.object({
+  title: z.string().min(1, { message: 'Task title is required' }),
+  description: z.string().optional(),
+  assignedToId: z.string().uuid(),
+  contactId: z.string().uuid().optional(),
+  dealId: z.string().uuid().optional(),
+  dueAt: z.string().optional(),
+});
+export type CreateTaskDto = z.infer<typeof CreateTaskSchema>;
+
+export const UpdateTaskStatusSchema = z.object({
+  status: z.nativeEnum(TaskStatus),
+});
+export type UpdateTaskStatusDto = z.infer<typeof UpdateTaskStatusSchema>;
+
+export const CreateCustomerDocumentSchema = z.object({
+  contactId: z.string().uuid().optional(),
+  companyId: z.string().uuid().optional(),
+  fileName: z.string().min(1),
+  fileUrl: z.string().url(),
+  fileSize: z.number(),
+  mimeType: z.string(),
+});
+export type CreateCustomerDocumentDto = z.infer<typeof CreateCustomerDocumentSchema>;
+
+export const LinkConversationCrmSchema = z.object({
+  conversationId: z.string().uuid(),
+  contactId: z.string().uuid().optional(),
+  dealId: z.string().uuid().optional(),
+});
+export type LinkConversationCrmDto = z.infer<typeof LinkConversationCrmSchema>;

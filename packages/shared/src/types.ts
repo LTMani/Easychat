@@ -10,6 +10,7 @@ import {
   LeadSource,
   DealStatus,
   ActivityType,
+  TaskStatus,
 } from './enums';
 
 export interface ApiResponse<T = any> {
@@ -76,6 +77,8 @@ export interface OrganizationMemberInfo {
 export interface ConversationPayload {
   id: string;
   organizationId: string;
+  contactId?: string;
+  dealId?: string;
   type: ConversationType;
   title?: string;
   description?: string;
@@ -90,6 +93,8 @@ export interface ConversationPayload {
   }[];
   lastMessage?: MessagePayload;
   unreadCount?: number;
+  contact?: ContactPayload;
+  deal?: DealPayload;
 }
 
 export interface MessageAttachmentPayload {
@@ -226,4 +231,45 @@ export interface ActivityPayload {
   completedAt?: string;
   user: UserProfile;
   createdAt: string;
+}
+
+export interface TaskPayload {
+  id: string;
+  organizationId: string;
+  assignedToId: string;
+  contactId?: string;
+  dealId?: string;
+  title: string;
+  description?: string;
+  status: TaskStatus;
+  dueAt?: string;
+  completedAt?: string;
+  assignedTo: UserProfile;
+  contact?: ContactPayload;
+  deal?: DealPayload;
+  createdAt: string;
+}
+
+export interface CustomerDocumentPayload {
+  id: string;
+  organizationId: string;
+  contactId?: string;
+  companyId?: string;
+  uploadedById: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+  uploadedBy: UserProfile;
+  createdAt: string;
+}
+
+export interface Customer360TimelineItem {
+  id: string;
+  type: 'MESSAGE' | 'ACTIVITY' | 'TASK' | 'DEAL_STAGE' | 'DOCUMENT';
+  title: string;
+  description?: string;
+  timestamp: string;
+  actor?: UserProfile;
+  metadata?: any;
 }
