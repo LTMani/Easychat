@@ -42,6 +42,11 @@ model User {
   activities            Activity[]               @relation("UserActivities")
   createdWorkflows      WorkflowRule[]           @relation("CreatedWorkflows")
   apiKeys               ApiKey[]                 @relation("CreatedApiKeys")
+  createdReports        ReportDefinition[]       @relation("CreatedReports")
+  createdTemplates      EmailTemplate[]          @relation("CreatedTemplates")
+  cannedResponses       CannedResponse[]         @relation("CreatedCannedResponses")
+  campaigns             BroadcastCampaign[]      @relation("CreatedCampaigns")
+  customerNotes         CustomerNote[]           @relation("AuthoredNotes")
 
   @@map("users")
 }
@@ -74,6 +79,14 @@ model Organization {
   apiKeys       ApiKey[]
   webhooks      WebhookEndpoint[]
   customFields  CustomFieldDefinition[]
+  channels      ChannelConfig[]
+  reports       ReportDefinition[]
+  templates     EmailTemplate[]
+  cannedResponses CannedResponse[]
+  slaPolicies   SlaPolicy[]
+  campaigns     BroadcastCampaign[]
+  macros        Macro[]
+  leadScoring   LeadScoringRule[]
 
   @@map("organizations")
 }
@@ -88,6 +101,7 @@ model Team {
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members        TeamMember[]
+  tickets        Ticket[]     @relation("TeamTickets")
 
   @@map("teams")
 }
@@ -149,9 +163,40 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+model ChannelConfig {
+  id             String       @id @default(uuid())
+  organizationId String
+  type           String       @default("WHATSAPP")
+  name           String
+  credentials    String       @default("{}")
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  conversations  Conversation[]
+  webhookLogs    ChannelWebhookLog[]
+
+  @@map("channel_configs")
+}
+
+model ChannelWebhookLog {
+  id              String        @id @default(uuid())
+  channelConfigId String
+  eventType       String
+  payload         String        @default("{}")
+  status          String        @default("PROCESSED")
+  createdAt       DateTime      @default(now())
+
+  channelConfig   ChannelConfig @relation(fields: [channelConfigId], references: [id], onDelete: Cascade)
+
+  @@map("channel_webhook_logs")
+}
+
 model Conversation {
   id             String           @id @default(uuid())
   organizationId String
+  channelId      String?
   contactId      String?
   dealId         String?
   type           String           @default("DIRECT")
@@ -164,6 +209,7 @@ model Conversation {
   updatedAt      DateTime         @updatedAt
 
   organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  channel        ChannelConfig?   @relation(fields: [channelId], references: [id], onDelete: SetNull)
   createdBy      User             @relation("CreatedConversations", fields: [createdById], references: [id], onDelete: Cascade)
   contact        Contact?         @relation(fields: [contactId], references: [id], onDelete: SetNull)
   deal           Deal?            @relation(fields: [dealId], references: [id], onDelete: SetNull)
@@ -243,6 +289,23 @@ model MessageReceipt {
   @@map("message_receipts")
 }
 
+model CannedResponse {
+  id             String       @id @default(uuid())
+  organizationId String
+  createdById    String
+  shortcut       String
+  title          String
+  content        String
+  category       String       @default("GENERAL")
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy      User         @relation("CreatedCannedResponses", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, shortcut])
+  @@map("canned_responses")
+}
+
 model Notification {
   id             String       @id @default(uuid())
   organizationId String
@@ -314,8 +377,23 @@ model Contact {
   tasks          Task[]
   documents      CustomerDocument[]
   tickets        Ticket[]
+  notes          CustomerNote[]
 
   @@map("contacts")
+}
+
+model CustomerNote {
+  id        String   @id @default(uuid())
+  contactId String
+  authorId  String
+  content   String
+  isPinned  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  contact   Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  author    User     @relation("AuthoredNotes", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("customer_notes")
 }
 
 model Lead {
@@ -338,6 +416,22 @@ model Lead {
   assignedTo     User?        @relation("AssignedLeads", fields: [assignedToId], references: [id], onDelete: SetNull)
 
   @@map("leads")
+}
+
+model LeadScoringRule {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  attribute      String
+  operator       String       @default("EQUALS")
+  value          String
+  scorePoints    Int          @default(10)
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("lead_scoring_rules")
 }
 
 model Pipeline {
@@ -462,9 +556,25 @@ model CustomerDocument {
   @@map("customer_documents")
 }
 
+model SlaPolicy {
+  id                 String   @id @default(uuid())
+  organizationId     String
+  name               String
+  priority           String   @default("MEDIUM")
+  firstResponseMinutes Int    @default(60)
+  resolutionMinutes  Int      @default(480)
+  isDefault          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("sla_policies")
+}
+
 model Ticket {
   id                 String         @id @default(uuid())
   organizationId     String
+  teamId             String?
   contactId          String?
   conversationId     String?
   assignedToId       String?
@@ -480,6 +590,7 @@ model Ticket {
   updatedAt          DateTime       @updatedAt
 
   organization       Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  team               Team?          @relation("TeamTickets", fields: [teamId], references: [id], onDelete: SetNull)
   contact            Contact?       @relation(fields: [contactId], references: [id], onDelete: SetNull)
   conversation       Conversation?  @relation(fields: [conversationId], references: [id], onDelete: SetNull)
   assignedTo         User?          @relation("AssignedTickets", fields: [assignedToId], references: [id], onDelete: SetNull)
@@ -535,9 +646,37 @@ model WorkflowRule {
 
   organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdBy      User                @relation("CreatedWorkflows", fields: [createdById], references: [id], onDelete: Cascade)
+  nodes          WorkflowNode[]
+  edges          WorkflowEdge[]
   executions     WorkflowExecution[]
 
   @@map("workflow_rules")
+}
+
+model WorkflowNode {
+  id             String       @id @default(uuid())
+  workflowRuleId String
+  nodeType       String       @default("ACTION")
+  label          String
+  positionX      Float        @default(0)
+  positionY      Float        @default(0)
+  config         String       @default("{}")
+
+  workflowRule   WorkflowRule @relation(fields: [workflowRuleId], references: [id], onDelete: Cascade)
+
+  @@map("workflow_nodes")
+}
+
+model WorkflowEdge {
+  id             String       @id @default(uuid())
+  workflowRuleId String
+  sourceNodeId   String
+  targetNodeId   String
+  label          String?
+
+  workflowRule   WorkflowRule @relation(fields: [workflowRuleId], references: [id], onDelete: Cascade)
+
+  @@map("workflow_edges")
 }
 
 model WorkflowExecution {
@@ -550,6 +689,79 @@ model WorkflowExecution {
   rule           WorkflowRule @relation(fields: [workflowRuleId], references: [id], onDelete: Cascade)
 
   @@map("workflow_executions")
+}
+
+model EmailTemplate {
+  id             String       @id @default(uuid())
+  organizationId String
+  createdById    String
+  name           String
+  subject        String
+  bodyHtml       String
+  bodyText       String?
+  variables      String       @default("[]")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy      User         @relation("CreatedTemplates", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("email_templates")
+}
+
+model BroadcastCampaign {
+  id             String       @id @default(uuid())
+  organizationId String
+  createdById    String
+  name           String
+  channelType    String       @default("EMAIL")
+  subject        String?
+  content        String
+  segmentQuery   String       @default("{}")
+  status         String       @default("DRAFT")
+  sentCount      Int          @default(0)
+  openCount      Int          @default(0)
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy      User         @relation("CreatedCampaigns", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("broadcast_campaigns")
+}
+
+model Macro {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  actions        String       @default("[]")
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("macros")
+}
+
+model ReportDefinition {
+  id             String       @id @default(uuid())
+  organizationId String
+  createdById    String
+  name           String
+  reportType     String       @default("REVENUE")
+  metrics        String       @default("[]")
+  dimensions     String       @default("[]")
+  filters        String       @default("{}")
+  chartType      String       @default("BAR")
+  isPublic       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy      User         @relation("CreatedReports", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@map("report_definitions")
 }
 
 model ApiKey {

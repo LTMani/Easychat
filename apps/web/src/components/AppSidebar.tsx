@@ -17,18 +17,24 @@ import {
   ShieldCheck,
   Settings,
   LogOut,
+  Inbox,
+  PieChart,
+  Mail,
 } from 'lucide-react';
 import { NotificationBell } from './NotificationBell';
 
 const navigationItems = [
   { name: 'Conversations', href: '/conversations', icon: MessageSquare, category: 'Communication' },
+  { name: 'Omnichannel Inbox', href: '/inbox', icon: Inbox, category: 'Communication' },
   { name: 'Contacts', href: '/contacts', icon: Users, category: 'CRM Suite' },
   { name: 'Leads', href: '/leads', icon: Target, category: 'CRM Suite' },
   { name: 'Deals Board', href: '/deals', icon: BarChart3, category: 'CRM Suite' },
   { name: 'Support Tickets', href: '/tickets', icon: LifeBuoy, category: 'Customer Support' },
   { name: 'Knowledge Base', href: '/knowledge-base', icon: BookOpen, category: 'Customer Support' },
-  { name: 'Automation', href: '/automation', icon: Zap, category: 'Platform' },
-  { name: 'Analytics', href: '/analytics', icon: TrendingUp, category: 'Platform' },
+  { name: 'Automation Engine', href: '/automation', icon: Zap, category: 'Platform' },
+  { name: 'Analytics Summary', href: '/analytics', icon: TrendingUp, category: 'Platform' },
+  { name: 'Custom Reports', href: '/reports', icon: PieChart, category: 'Platform' },
+  { name: 'Email Templates', href: '/email-templates', icon: Mail, category: 'Platform' },
   { name: 'AI Copilot', href: '/ai', icon: Sparkles, category: 'Platform' },
   { name: 'Developer & Keys', href: '/developer', icon: Code, category: 'Platform' },
   { name: 'Audit Logs', href: '/audit', icon: ShieldCheck, category: 'Enterprise' },
@@ -140,7 +146,7 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
           </div>
 
           <div>
-            <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Platform & AI</div>
+            <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">Platform & Analytics</div>
             <div className="space-y-1">
               {navigationItems
                 .filter((item) => item.category === 'Platform')

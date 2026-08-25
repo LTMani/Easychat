@@ -12,6 +12,9 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AiModule } from './modules/ai/ai.module';
 import { PlatformModule } from './modules/platform/platform.module';
 import { EnterpriseModule } from './modules/enterprise/enterprise.module';
+import { ChannelsModule } from './modules/channels/channels.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -28,6 +31,9 @@ import { EnterpriseModule } from './modules/enterprise/enterprise.module';
     AiModule,
     PlatformModule,
     EnterpriseModule,
+    ChannelsModule,
+    ReportsModule,
+    SearchModule,
   ],
 })
 export class AppModule {}

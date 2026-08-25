@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Zap, Plus, Play, CheckCircle } from 'lucide-react';
+import { Zap, Plus, Play, CheckCircle, Layout } from 'lucide-react';
 import { NotificationBell } from '../../../components/NotificationBell';
+import { WorkflowCanvas } from '../../../components/workflow/WorkflowCanvas';
 
 export default function AutomationPage() {
   const [workflows, setWorkflows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [viewMode, setViewMode] = useState<'CANVAS' | 'LIST'>('CANVAS');
   const [formData, setFormData] = useState({
     name: '',
     triggerType: 'LEAD_CREATED',
@@ -82,11 +84,27 @@ export default function AutomationPage() {
           </Link>
           <h1 className="text-xl font-bold text-slate-900">Automation Workflow Engine</h1>
         </div>
-        <NotificationBell />
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-lg text-xs font-semibold text-slate-600">
+            <button
+              onClick={() => setViewMode('CANVAS')}
+              className={`px-3 py-1 rounded-md ${viewMode === 'CANVAS' ? 'bg-white text-slate-900 shadow-sm' : ''}`}
+            >
+              Visual Canvas
+            </button>
+            <button
+              onClick={() => setViewMode('LIST')}
+              className={`px-3 py-1 rounded-md ${viewMode === 'LIST' ? 'bg-white text-slate-900 shadow-sm' : ''}`}
+            >
+              Rule List
+            </button>
+          </div>
+          <NotificationBell />
+        </div>
       </header>
 
-      <main className="max-w-6xl w-full mx-auto px-6 py-8 flex-1">
-        <div className="flex items-center justify-between mb-6">
+      <main className="max-w-6xl w-full mx-auto px-6 py-8 flex-1 space-y-6">
+        <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">Trigger-Condition-Action Workflows</h2>
             <p className="text-sm text-slate-500 mt-1">Automate lead routing, notifications, and deal stage transitions</p>
@@ -100,7 +118,9 @@ export default function AutomationPage() {
           </button>
         </div>
 
-        {loading ? (
+        {viewMode === 'CANVAS' ? (
+          <WorkflowCanvas />
+        ) : loading ? (
           <div className="text-center py-12 text-slate-500">Loading automation rules...</div>
         ) : workflows.length === 0 ? (
           <div className="bg-white p-12 text-center rounded-xl border border-slate-200 text-slate-500">

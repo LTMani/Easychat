@@ -1,0 +1,17 @@
+{
+  "name": "@easychat/sdk",
+  "version": "1.0.0",
+  "description": "Official TypeScript & JavaScript Client SDK for EasyChat CRM API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@easychat/shared": "*",
+    "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
