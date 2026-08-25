@@ -1,0 +1,161 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum SystemRoleName {
+  OWNER
+  ADMIN
+  MANAGER
+  SALES_REP
+  SUPPORT_AGENT
+  MEMBER
+}
+
+enum MemberStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+}
+
+model User {
+  id               String               @id @default(uuid())
+  email            String               @unique
+  passwordHash     String
+  firstName        String
+  lastName         String
+  avatarUrl        String?
+  isEmailVerified  Boolean              @default(false)
+  twoFactorEnabled Boolean              @default(false)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  memberships      OrganizationMember[]
+  sessions         Session[]
+  refreshTokens    RefreshToken[]
+  auditLogs        AuditLog[]
+  securityLogs     SecurityLog[]
+
+  @@map("users")
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  logoUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members   OrganizationMember[]
+  teams     Team[]
+  auditLogs AuditLog[]
+
+  @@map("organizations")
+}
+
+model Team {
+  id             String       @id @default(uuid())
+  organizationId String
+  name           String
+  description    String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members        TeamMember[]
+
+  @@map("teams")
+}
+
+model OrganizationMember {
+  id             String         @id @default(uuid())
+  organizationId String
+  userId         String
+  role           SystemRoleName @default(MEMBER)
+  status         MemberStatus   @default(ACTIVE)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teams          TeamMember[]
+
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}
+
+model TeamMember {
+  id                   String             @id @default(uuid())
+  teamId               String
+  organizationMemberId String
+  createdAt            DateTime           @default(now())
+
+  team                 Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  member               OrganizationMember @relation(fields: [organizationMemberId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, organizationMemberId])
+  @@map("team_members")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  isRevoked Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model AuditLog {
+  id             String        @id @default(uuid())
+  organizationId String?
+  userId         String?
+  action         String
+  entityType     String?
+  entityId       String?
+  metadata       Json?
+  ipAddress      String?
+  createdAt      DateTime      @default(now())
+
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+model SecurityLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  event     String
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("security_logs")
+}

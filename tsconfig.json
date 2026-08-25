@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@easychat/shared": ["packages/shared/src"],
+      "@easychat/database": ["packages/database/src"],
+      "@easychat/auth": ["packages/auth/src"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".next"]
+}

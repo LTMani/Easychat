@@ -1,0 +1,22 @@
+{
+  "name": "@easychat/database",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "ts-node prisma/seed.ts"
+  },
+  "dependencies": {
+    "@easychat/auth": "*",
+    "@easychat/shared": "*",
+    "@prisma/client": "^5.21.1"
+  },
+  "devDependencies": {
+    "prisma": "^5.21.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}
