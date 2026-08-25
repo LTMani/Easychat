@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma, WorkflowTriggerType as DBTrigger, WorkflowActionType as DBAction } from '@easychat/database';
+import { prisma } from '@easychat/database';
 import { CreateWorkflowRuleDto, ApiResponse } from '@easychat/shared';
 
 @Injectable()
@@ -22,9 +22,9 @@ export class AutomationService {
         organizationId: orgId,
         createdById: userId,
         name: dto.name,
-        triggerType: dto.triggerType as unknown as DBTrigger,
-        actionType: dto.actionType as unknown as DBAction,
-        config: dto.config || {},
+        triggerType: dto.triggerType,
+        actionType: dto.actionType,
+        config: JSON.stringify(dto.config || {}),
       },
       include: {
         createdBy: { select: { id: true, email: true, firstName: true, lastName: true } },
@@ -46,7 +46,7 @@ export class AutomationService {
       data: {
         workflowRuleId: ruleId,
         status: 'SUCCESS',
-        output: { triggeredAt: new Date().toISOString(), payload },
+        output: JSON.stringify({ triggeredAt: new Date().toISOString(), payload }),
       },
     });
 

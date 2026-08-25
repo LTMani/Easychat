@@ -53,7 +53,7 @@ export class PlatformService {
         organizationId: orgId,
         url: dto.url,
         secret,
-        events: dto.events,
+        events: JSON.stringify(dto.events || []),
       },
     });
 

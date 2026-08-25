@@ -1,4 +1,5 @@
-import { PrismaClient, SystemRoleName } from '@prisma/client';
+import 'dotenv/config';
+import { PrismaClient } from '@prisma/client';
 import { hashPassword } from '@easychat/auth';
 
 const prisma = new PrismaClient();
@@ -53,7 +54,7 @@ async function main() {
       data: {
         organizationId: org.id,
         userId: user.id,
-        role: SystemRoleName.OWNER,
+        role: 'OWNER',
       },
     });
     console.log(`Assigned admin user as OWNER of EasyChat Global`);

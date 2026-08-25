@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { prisma, DealStatus as DBDealStatus } from '@easychat/database';
+import { prisma } from '@easychat/database';
 import { CreateDealDto, UpdateDealStageDto, ApiResponse } from '@easychat/shared';
 
 @Injectable()
@@ -80,6 +80,9 @@ export class DealsService {
         stage: true,
         contact: true,
         company: true,
+        assignedTo: {
+          select: { id: true, email: true, firstName: true, lastName: true },
+        },
       },
     });
 
@@ -112,7 +115,7 @@ export class DealsService {
       where: { id: dealId },
       data: {
         stageId: dto.stageId,
-        status: dto.status ? (dto.status as unknown as DBDealStatus) : deal.status,
+        status: dto.status ? dto.status : deal.status,
         winLossReason: dto.winLossReason,
       },
       include: {
@@ -128,7 +131,7 @@ export class DealsService {
         action: 'DEAL_STAGE_UPDATED',
         entityType: 'Deal',
         entityId: deal.id,
-        metadata: { stageId: dto.stageId, status: dto.status },
+        metadata: JSON.stringify({ stageId: dto.stageId, status: dto.status }),
       },
     });
 

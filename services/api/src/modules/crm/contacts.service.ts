@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { prisma } from '@easychat/database';
-import { CreateContactDto, CreateCompanyDto, ApiResponse } from '@easychat/shared';
+import { CreateCompanyDto, CreateContactDto, ApiResponse } from '@easychat/shared';
 
 @Injectable()
 export class ContactsService {
@@ -8,7 +8,11 @@ export class ContactsService {
     const contacts = await prisma.contact.findMany({
       where: { organizationId: orgId },
       orderBy: { createdAt: 'desc' },
-      include: { company: true },
+      include: {
+        company: true,
+        conversations: { take: 1, orderBy: { createdAt: 'desc' } },
+        deals: { take: 3, orderBy: { createdAt: 'desc' } },
+      },
     });
 
     return {
@@ -24,12 +28,14 @@ export class ContactsService {
         firstName: dto.firstName,
         lastName: dto.lastName,
         email: dto.email,
+        companyId: dto.companyId,
         phone: dto.phone,
         jobTitle: dto.jobTitle,
-        companyId: dto.companyId,
-        tags: dto.tags || [],
+        tags: JSON.stringify(dto.tags || []),
       },
-      include: { company: true },
+      include: {
+        company: true,
+      },
     });
 
     await prisma.auditLog.create({
@@ -51,8 +57,11 @@ export class ContactsService {
   async getCompanies(orgId: string): Promise<ApiResponse> {
     const companies = await prisma.company.findMany({
       where: { organizationId: orgId },
-      orderBy: { name: 'asc' },
-      include: { contacts: true, deals: true },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        contacts: true,
+        deals: true,
+      },
     });
 
     return {

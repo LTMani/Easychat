@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { prisma, CustomFieldDataType as DBDataType } from '@easychat/database';
+import { prisma } from '@easychat/database';
 import { CreateCustomFieldDto, ApiResponse } from '@easychat/shared';
 
 @Injectable()
@@ -32,9 +32,9 @@ export class EnterpriseService {
         entityType: dto.entityType,
         fieldKey: dto.fieldKey,
         label: dto.label,
-        dataType: (dto.dataType || 'STRING') as unknown as DBDataType,
+        dataType: dto.dataType || 'STRING',
         isRequired: dto.isRequired || false,
-        options: dto.options || [],
+        options: JSON.stringify(dto.options || []),
       },
     });
 
